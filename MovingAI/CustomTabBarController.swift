@@ -3,7 +3,7 @@
 //  MovingAI
 //
 //  Created by soyoung on 12/5/24.
-//
+// 하단 탭바
 
 import UIKit
 
