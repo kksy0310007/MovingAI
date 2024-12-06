@@ -12,7 +12,7 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.title = "Main"
+        addNavigationBar(titleString: "MainViewController",isBackButtonVisible: false)
     }
 
 

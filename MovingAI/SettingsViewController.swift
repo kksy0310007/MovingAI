@@ -12,7 +12,9 @@ class SettingsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.title = "Main"
+        // 상단 타이틀 바
+        addNavigationBar(titleString: "SettingsViewController",isBackButtonVisible: true)
+        
     }
 
 

@@ -12,7 +12,7 @@ class EventNotificationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.title = "EventNotification"
+        addNavigationBar(titleString: "EventNotificationViewController",isBackButtonVisible: false)
     }
 
 

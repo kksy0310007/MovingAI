@@ -12,13 +12,12 @@ class CustomTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
         tabBar.isTranslucent = false
         tabBar.tintColor = #colorLiteral(red: 0.2528479099, green: 0.4240060449, blue: 0.8678660989, alpha: 1)
         
         delegate = self
         
-        // Instantiate view controllers
+        // 네비게이션 이름 설정
         let mainNav = self.storyboard?.instantiateViewController(withIdentifier: "MainNav") as! UINavigationController
         
         let eventNotificationNav = self.storyboard?.instantiateViewController(withIdentifier: "EventNotificationNav") as! UINavigationController
@@ -28,7 +27,7 @@ class CustomTabBarController: UITabBarController {
         let settingsNav = self.storyboard?.instantiateViewController(withIdentifier: "SettingsNav") as! UINavigationController
         
         
-        // Create TabBar items
+        // 탭바 아이템
         eventNotificationNav.tabBarItem = UITabBarItem(title: nil, image: UIImage(systemName: "bell.fill"), selectedImage: UIImage(systemName: "bell.fill"))
         
         camListNav.tabBarItem = UITabBarItem(title: nil, image: UIImage(systemName: "text.document"), selectedImage: UIImage(systemName: "text.document"))
@@ -36,17 +35,21 @@ class CustomTabBarController: UITabBarController {
         mainNav.tabBarItem = UITabBarItem(title: nil, image: nil, selectedImage: nil)
         
         
-        // Assign viewControllers to tabBarController
+        // 탭 바 셋팀
         let viewControllers = [eventNotificationNav, mainNav, camListNav]
         self.setViewControllers(viewControllers, animated: false)
         
-        
+        // 가운데 버튼 세팅
         guard let tabBar = self.tabBar as? CustomTabBar else { return }
         
+        // 클릭 리스너
         tabBar.didTapButton = { [unowned self] in
             self.routeToCreateNewAd()
         }
         
+        
+        // 시작 탭바 페이지
+        self.selectedIndex = 1
     }
     
     func routeToCreateNewAd() {

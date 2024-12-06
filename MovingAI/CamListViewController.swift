@@ -9,11 +9,12 @@
 import UIKit
 
 class CamListViewController: UIViewController {
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.title = "CamList"
+        // 상단 타이틀 바
+        addNavigationBar(titleString: "CamListViewController",isBackButtonVisible: false)
     }
 
 
