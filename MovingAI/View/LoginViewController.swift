@@ -27,6 +27,9 @@ class LoginViewController: UIViewController {
 //    var testId = "hdjs00"
 //    var testPW = "123qwe"
     
+    
+    let userAccount = UserAccountMethods.shared
+    
     // UI
     // 권한 체크
     // 로그인 API
@@ -348,21 +351,19 @@ class LoginViewController: UIViewController {
                      if (self.isAutoLogin) {
                          UserDefaults.standard.set(encodeUserName, forKey: "id")
                          UserDefaults.standard.set(encodePW,forKey: "pwd")
-                         
-                         // 싱클톤으로 값 저장
-                         
-                         let userAccount = UserAccountMethods.shared
-                         userAccount.id = encodeUserName
-                         userAccount.isAutoLogin = self.isAutoLogin
-                         userAccount.movingAIUserAccount = value
-                         
-                         userAccount.attachId = value.attach.id
-                         userAccount.attachType = value.attach.attachType ?? "Company"
-                         userAccount.title = value.attach.name
-                         
-                         // 화면 이동
-                         // 메인화면 타이틀 설정
                      }
+                     
+                    // 싱클톤으로 값 저장
+                     self.userAccount.id = encodeUserName
+                     self.userAccount.isAutoLogin = self.isAutoLogin
+                     self.userAccount.movingAIUserAccount = value
+                         
+                     self.userAccount.attachId = value.attach.id
+                     self.userAccount.attachType = value.attach.attachType ?? "Company"
+                     self.userAccount.title = value.attach.name
+                         
+                    // 화면 이동
+                     self.updateUI()
                      
                      
                  case .failure(let error):
@@ -371,5 +372,14 @@ class LoginViewController: UIViewController {
                      self.errorLabel.isHidden = false
                  }
              }
+    }
+    
+    func updateUI() {
+        print("이동시켜라" )
+        guard let customTabBarVC = self.storyboard?.instantiateViewController(withIdentifier: "CustomTabBarController") as? CustomTabBarController else { return }
+
+        self.navigationController?.pushViewController(customTabBarVC, animated: true)
+//                         self.present(mainVC,animated: true)
+        
     }
 }

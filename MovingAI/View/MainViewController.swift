@@ -19,8 +19,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     var locationManager = CLLocationManager()
     var longitude = CLLocationDegrees()
     var latitude = CLLocationDegrees()
-    
-    
+        
     // 전체 장비
     private var allAssetDeviceList: [AssetData] = []
     // 온라인 장비 전체
@@ -49,8 +48,11 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // navigation title
-        addNavigationBar(titleString: "MainViewController",isBackButtonVisible: false)
+    
+        // 메인화면 타이틀 설정
+        let title = userAccount.title
+        addNavigationBar(titleString: title,isBackButtonVisible: false)
+        
         
         // 현재 위치
         locationManager.delegate = self
