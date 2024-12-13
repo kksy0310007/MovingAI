@@ -56,10 +56,10 @@
             </objects>
             <point key="canvasLocation" x="2169" y="-330"/>
         </scene>
-        <!--View Controller-->
+        <!--Login View Controller-->
         <scene sceneID="7dd-Lz-gih">
             <objects>
-                <viewController id="bNw-Mg-3Oo" sceneMemberID="viewController">
+                <viewController id="bNw-Mg-3Oo" customClass="LoginViewController" customModule="MovingAI" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="cTs-yg-fBs">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
