@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns='http://www.w3.org/1999/html'>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
+  <title>브이월드 WebGL webviewer</title>
+  <style>
+    .map {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      
+      width: 100vw;
+      height: 100vh;
+
+      left: 0;
+      top: 0;
+
+      margin: 0;
+    }
+  </style>
+  <script type="text/javascript" src="http://map.vworld.kr/js/vworldMapInit.js.do?version=2.0&apiKey=52E7B359-7B50-3405-8DDE-03FCE6F2F7B0"></script>
+<!--  <script type="text/javascript" src="http://map.vworld.kr/js/vworldMapInit.js.do?version=2.0&apiKey=07870F42-9ACD-3D98-A084-115F92830FA1"></script>-->
+<!--   <script type="text/javascript" src="http://map.vworld.kr/js/vworldMapInit.js.do?version=2.0&apiKey=B3712D76-49AE-34F8-82E3-AB18AC66505C"></script> -->
+<!-- 경우 vworld api key -->
+<!--   <script type="text/javascript" src="http://map.vworld.kr/js/vworldMapInit.js.do?version=2.0&apiKey=9CF9B5FC-183F-3088-AB96-A495FF66EEEA"></script>-->
+</head>
+
+<body>
+  <div id="vmap" class="map"></div>
+  <script type="text/javascript">
+  
+    var selectMarker;
+
+    vw.ol3.MapOptions = {
+      basemapType: vw.ol3.BasemapType.GRAPHIC,
+      controlDensity: vw.ol3.DensityType.EMPTY,
+      interactionDensity: vw.ol3.DensityType.BASIC,
+      controlsAutoArrange: true,
+      homePosition: vw.ol3.CameraPosition,
+      initPosition: vw.ol3.CameraPosition
+    };
+
+    var vmap = new vw.ol3.Map("vmap",  vw.ol3.MapOptions);
+    vmap.getView().setCenter(ol.proj.transform([127.190688, 37.549060], 'EPSG:4326', 'EPSG:3857'));
+    vmap.getView().setZoom(16);
+
+    vmap.on('click', function (evt) {
+      var feature = vmap.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+        if (layer != null && layer.className == 'vw.ol3.layer.Marker') {
+          console.log("marker clicked");
+          if (markerLayer != null) {
+            console.log("marker layer is not null");
+          }
+          // vmap.clear();
+          console.log(feature.get('title'));
+          // java 메소드 실행하도록 명령 전송
+          MarkerInterface.startCamMonitoring(feature.get('title'));
+          // 새로운 popup 인스턴스 집어넣기(popup 사라짐)
+          vmap.addOverlay(new vw.ol3.popup.Popup());
+        } else {
+          return false;
+        }
+      });
+    });
+
+    var esp = vmap.getView().getProjection().getCode();
+    console.log(esp);
+
+    // setTimeout("addMarkerLayer()", 1000);
+    // addMarkerLayer()
+    // for(var i = 0; i < 5; i++) {
+    //     addMarker(i);
+    // }
+
+    //var _center = [ 14129709.590359, 4512313.7639686 ];
+    //var _center = [ 127.190688, 37.549060 ];
+    var _center;
+
+    // 하남 회사근처 위경도
+    // fnSetCenter(127.190688, 37.549060);
+
+    function fnSetCenter(lon, lat) {
+      // _center = [ x, y ]
+      _center = new ol.geom.Point([lon, lat]).transform('EPSG:4326', 'EPSG:3857').getCoordinates();
+      var z = 15;
+      var pan = ol.animation.pan({
+        duration : 500,
+        source : (vmap.getView().getCenter())
+      });
+      vmap.beforeRender(pan);
+      vmap.getView().setCenter(_center);
+      // setTimeout("fnMoveZoom()", 0);
+      fnMoveZoom();
+    }
+
+    function fnMoveZoom() {
+      zoom = vmap.getView().getZoom();
+      if (16 > zoom) {
+        vmap.getView().setZoom(16);
+      }
+    }
+
+    var markerLayer = null;
+    function addMarkerLayer() {
+      // this.markerLayer.removeAllMarker();
+      // markerLayer = null;
+      if (markerLayer != null) {
+        vmap.removeLayer(markerLayer);
+        markerLayer = null;
+      }
+      markerLayer = new vw.ol3.layer.Marker(vmap);
+      vmap.addLayer(markerLayer);
+    }
+
+    // 이걸로 커스텀 마커 이미지 세팅해보기?
+    // https://mollangpiu.tistory.com/282
+    function addMarker(markerDatas) {
+      //deviceSerial, deviceSession, deviceName, lon, lat
+      const datas = dataSplitter(markerDatas);
+      
+      var deviceSerial = datas[0];
+      var deviceSession = datas[1];
+      var deviceName = datas[2];
+      var lon = datas[3];
+      var lat = datas[4];
+      
+      var hexSerial = deviceSerial.toString(16);
+      
+      // var markerTitle = "Session ID: " + deviceSession + " (0x" + hexSerial + ")";
+      var markerTitle = deviceName;
+      var markerContents = "now session: " + deviceSession;
+
+      var markerDeviceDataString = deviceSession + "," + "0x"+hexSerial;
+
+      var marker = vw.ol3.markerOption = {
+        // x : 127.190688 + (Math.random() * 0.001),
+        // y : 37.549060 + (Math.random() * 0.001),
+        x : lon,
+        y : lat,
+        epsg : "EPSG:4326",
+        title : markerDeviceDataString, // 마커 클릭 후 뜨는 팝업에서 보이는 글자
+        contents : markerContents,
+        // iconUrl : './5050marker.png',
+        text : {
+          offsetX : 0.5,
+          offsetY : 20,
+          font : '14px Calibri, noto-sans',
+          fill : { color : '#000' },
+          stroke : { color : '#fff', width: 10 },
+          text : markerTitle // 지도에 표시되는 글자
+        },
+        attr : { "id":"1", "name":"1" },
+        imgAnchor : { 'x' : 1, 'y' : 1 }
+      };
+      markerLayer.addMarker(marker);
+    }
+
+    function dataSplitter(stringData) {
+      return stringData.split('@');
+    }
+  </script>
+
+</body>
+</html>
