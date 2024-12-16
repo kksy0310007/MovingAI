@@ -4,17 +4,23 @@
 <dict>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-    </dict>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This application requires location services to work</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>This application requires location services to work</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>Location is required to find out where you are</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This application requires location services to work</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This application requires location services to work</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Location is required to find out where you are</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This application requires Camera services to work</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This application requires Photo Library services to work</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This application requires Microphone services to work</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

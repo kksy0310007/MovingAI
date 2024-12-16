@@ -8,9 +8,12 @@
 import UIKit
 import SnapKit
 import Alamofire
+import SwiftUICore
 
 
 class LoginViewController: UIViewController {
+    
+    @StateObject var permissionViewModel = PermissionViewModel()
     
     private let bottomSheetLayout = UIView()
     private let errorLabel = UILabel()
@@ -30,14 +33,18 @@ class LoginViewController: UIViewController {
     
     let userAccount = UserAccountMethods.shared
     
-    // UI
-    // 권한 체크
-    // 로그인 API
-    // 자동 로그인
+
+    // TODO : 자동 로그인 구현
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // 권한 묻기
+        permissionViewModel.requestPermission()
+        
+        
+        
         
         // 키보드 이벤트 감지 등록
             NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)

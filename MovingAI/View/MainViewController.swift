@@ -61,7 +61,9 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         //베터리에 맞게 권장되는 최적의 정확도
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
-        checkAuthorizationStatus()
+        
+        // 권한 체크
+//        checkAuthorizationStatus()
         
         // 웹 뷰 초기화 및 설정
         settingsWebView()
@@ -319,6 +321,10 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 }
             }
     }
+    
+    func settingData() {
+        
+    }
 }
 
 
@@ -350,34 +356,34 @@ extension MainViewController: CLLocationManagerDelegate {
      * checkAuthorizationStatus()
      * - 권한 상태 확인하기
      **/
-    func checkAuthorizationStatus() {
-
-        if #available(iOS 14.0, *) {
-
-            if locationManager.authorizationStatus == .authorizedAlways
-                || locationManager.authorizationStatus == .authorizedWhenInUse {
-                print("==> 위치 서비스 On 상태")
-                locationManager.startUpdatingLocation() //위치 정보 받아오기 시작 - 사용자의 현재 위치를 보고하는 업데이트 생성을 시작
-            } else if locationManager.authorizationStatus == .notDetermined {
-                print("==> 위치 서비스 Off 상태")
-                locationManager.requestWhenInUseAuthorization()
-            } else if locationManager.authorizationStatus == .denied {
-                print("==> 위치 서비스 Deny 상태")
-            }
-
-        } else {
-
-            // Fallback on earlier versions
-            if CLLocationManager.locationServicesEnabled() {
-                print("위치 서비스 On 상태")
-                locationManager.startUpdatingLocation() //위치 정보 받아오기 시작 - 사용자의 현재 위치를 보고하는 업데이트 생성을 시작
-                print("LocationViewController >> checkPermission() - \(String(describing: locationManager.location?.coordinate))")
-            } else {
-                print("위치 서비스 Off 상태")
-                locationManager.requestWhenInUseAuthorization()
-            }
-
-        }
-    }
+//    func checkAuthorizationStatus() {
+//
+//        if #available(iOS 14.0, *) {
+//
+//            if locationManager.authorizationStatus == .authorizedAlways
+//                || locationManager.authorizationStatus == .authorizedWhenInUse {
+//                print("==> 위치 서비스 On 상태")
+//                locationManager.startUpdatingLocation() //위치 정보 받아오기 시작 - 사용자의 현재 위치를 보고하는 업데이트 생성을 시작
+//            } else if locationManager.authorizationStatus == .notDetermined {
+//                print("==> 위치 서비스 Off 상태")
+//                locationManager.requestWhenInUseAuthorization()
+//            } else if locationManager.authorizationStatus == .denied {
+//                print("==> 위치 서비스 Deny 상태")
+//            }
+//
+//        } else {
+//
+//            // Fallback on earlier versions
+//            if CLLocationManager.locationServicesEnabled() {
+//                print("위치 서비스 On 상태")
+//                locationManager.startUpdatingLocation() //위치 정보 받아오기 시작 - 사용자의 현재 위치를 보고하는 업데이트 생성을 시작
+//                print("LocationViewController >> checkPermission() - \(String(describing: locationManager.location?.coordinate))")
+//            } else {
+//                print("위치 서비스 Off 상태")
+//                locationManager.requestWhenInUseAuthorization()
+//            }
+//
+//        }
+//    }
     
 }
