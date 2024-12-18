@@ -16,7 +16,8 @@
 class UserAccountMethods {
     static let shared = UserAccountMethods()
     
-    var id: String?
+    var id: Int?
+    var name: String?
     var isAutoLogin: Bool = true
     var movingAIUserAccount: MovingAiUserAccount?
     
@@ -33,6 +34,9 @@ class UserAccountMethods {
     // 현장 title
     var title: String = ""
     
+    
+    // 선택한 현장 데이터
+    var selectedSiteData: AttachData? = nil
     
     private init() {
         

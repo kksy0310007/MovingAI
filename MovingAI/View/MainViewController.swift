@@ -14,7 +14,7 @@ import Alamofire
 class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler {
     
     var webView: WKWebView!
-    
+        
     // 현재 위치의 위도, 경도
     var locationManager = CLLocationManager()
     var longitude = CLLocationDegrees()
@@ -38,6 +38,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     let userAccount = UserAccountMethods.shared
     let nxCamData = NxCamMethods.shared
     
+    
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         print(message.name)
         if (message.name == "MarkerInterface") {
@@ -48,7 +49,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-    
         // 메인화면 타이틀 설정
         let title = userAccount.title
         addNavigationBar(titleString: title,isBackButtonVisible: false)
@@ -62,17 +62,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
         
-        // 권한 체크
-//        checkAuthorizationStatus()
-        
-        // 웹 뷰 초기화 및 설정
-        settingsWebView()
-        
-        mapSetCenterFromGPS()
-        
-        addMarkerLayer()
-        
-        self.webView.reload()
         
         // 전체 온라인 장비
         apiOnlineDevices()
@@ -80,14 +69,38 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         apiAllAssets()
         // 전체 현장
         apiAllSites()
+        
+        // 접근 가능한 현장의 온라인/전체 장비 데이터를 불러오고 처리하는 thread 작업
+        siteAssetsCheck()
+        
+        // 권한 체크
+//        checkAuthorizationStatus()
+        
+        // 웹 뷰 초기화 및 설정
+        settingsWebView()
+        
+        self.webView.reload()
+        
+        
+    }
+    
+    private func mapWithWebView() {
+        let selectedSite = userAccount.movingAIUserAccount?.attach
+        
+        if (selectedSite?.lng != nil && selectedSite?.lat != nil) {
+            mapSetCenterFromGPS(lon: (selectedSite?.lng)!, lat: (selectedSite?.lat)!)
+        } else {
+            print("계정에 위치값이 없습니다. 현재 위치로 맵 포커스 이동.")
+            mapSetCenterFromGPS(lon: self.longitude, lat: self.latitude)
+        }
     }
 
     // vworld 지도 위치 값 표시 JavaScript
-    private func mapSetCenterFromGPS() {
+    private func mapSetCenterFromGPS(lon: Double, lat: Double) {
         DispatchQueue.global().asyncAfter(deadline: .now() + 3) {
             DispatchQueue.main.async {
                 
-                let jsCode = "fnSetCenter(\(self.longitude), \(self.latitude));"
+                let jsCode = "fnSetCenter(\(lon), \(lat));"
                 // 회사
 //                let jsCode = "fnSetCenter(127.190688, 37.549060);"
                 self.webView.evaluateJavaScript(jsCode) { (result, error) in
@@ -97,6 +110,8 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     } else {
                         print("mapSetCenterFromGPS - JavaScript executed successfully: \(result ?? "No result")")
                     }
+                    self.addMarkerLayer()
+                    self.makeAddMarkerLayer()
                 }
             }
         }
@@ -121,54 +136,55 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     }
     
     // vworld 지도 마커 추가 JavaScript
-//    private func makeAddMarkerLayer() {
-//        var latDeg: Double
-//        var lonDeg: Double
-//
-//        // 접근 가능한 현장의 장비 리스트만 마커 업로드하기
-//        for targetDevice in onlineSiteAssetList {
-//            for targetAsset in allSiteAssetList {
-//                if let sessionId = Int(targetDevice.sessionId), sessionId == targetAsset.id {
-//
-//                    if let lat = targetAsset.lat, let lon = targetAsset.lon {
-//                        latDeg = lat
-//                        lonDeg = lon
-//                    } else if let attachLat = targetAsset.attach?.lat, let attachLon = targetAsset.attach?.lng {
-//                        latDeg = attachLat
-//                        lonDeg = attachLon
-//                    } else {
-//                        continue // lat/lon 정보가 없으면 스킵
-//                    }
-//
-//                    let sb = [
-//                        targetAsset.serial,
-//                        "\(targetAsset.id)",
-//                        targetAsset.name,
-//                        "\(lonDeg)",
-//                        "\(latDeg)"
-//                    ].joined(separator: "@")
-//
-//                    webView.evaluateJavaScript("javascript:addMarker('\(sb)')", completionHandler: nil)
-//                }
-//            }
-//        }
-//
-//
-//        DispatchQueue.global().asyncAfter(deadline: .now() + 3) {
-//            DispatchQueue.main.async {
-//                print("makeAddMarkerLayer : 3 seconds have passed")
-//                let jsCode = "addMarker('\(sb)');"
-//
-//                self.webView.evaluateJavaScript(jsCode) { (result, error) in
-//                    if let error = error {
-//                        print("makeAddMarkerLayer - JavaScript execution error: \(error.localizedDescription)")
-//                    } else {
-//                        print("makeAddMarkerLayer - JavaScript executed successfully: \(result ?? "No result")")
-//                    }
-//                }
-//            }
-//        }
-//    }
+    private func makeAddMarkerLayer() {
+    
+        DispatchQueue.global().asyncAfter(deadline: .now() + 3) {
+            DispatchQueue.main.async {
+                print("makeAddMarkerLayer : 3 seconds have passed")
+                             
+                
+                // 접근 가능한 현장의 장비 리스트만 마커 업로드하기
+                for targetDevice in self.onlineSiteAssetList {
+                    for targetAsset in self.allSiteAssetList {
+                        if let sessionId = Int(targetDevice.sessionId), sessionId == targetAsset.id {
+
+                            var latDeg: Double
+                            var lonDeg: Double
+                            
+                            if let lat = targetAsset.lat, let lon = targetAsset.lon, lat != 0.0, lon != 0.0 {
+                                latDeg = lat
+                                lonDeg = lon
+                            } else if let attachLat = targetAsset.attach?.lat, let attachLon = targetAsset.attach?.lng, attachLat != 0.0, attachLon != 0.0 {
+                                latDeg = attachLat
+                                lonDeg = attachLon
+                            } else {
+                                continue // lat/lon 정보가 없거나 0.0인 경우 스킵
+                            }
+
+                            let sb = [
+                                targetAsset.serial,
+                                "\(targetAsset.id)",
+                                targetAsset.name ?? ".",
+                                "\(lonDeg)",
+                                "\(latDeg)"
+                            ].joined(separator: "@")
+                            
+                            let jsCode = "addMarker('\(sb)');"
+                            print("마커.  ==========> : \(jsCode)")
+                            self.webView.evaluateJavaScript(jsCode) { (result, error) in
+                                if let error = error {
+                                    print("makeAddMarkerLayer - JavaScript execution error: \(error.localizedDescription)")
+                                } else {
+                                    print("makeAddMarkerLayer - JavaScript executed successfully: \(result ?? "No result")")
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
   
     
     private func initView() {
@@ -180,6 +196,26 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             make.leading.equalToSuperview()
             make.trailing.equalToSuperview()
         }
+        
+        // 리스트 back UIView
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = .white
+        backgroundView.layer.cornerRadius = 20
+        backgroundView.layer.borderWidth = 3
+        backgroundView.layer.borderColor = UIColor(red: 221/255, green: 221/255, blue: 221/255, alpha: 1.0).cgColor
+        
+        
+        view.addSubview(backgroundView)
+        view.bringSubviewToFront(backgroundView)
+        
+        backgroundView.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.top.equalToSuperview().offset(30)
+            make.height.equalTo(45)
+            make.leading.equalToSuperview().offset(80)
+            make.trailing.equalToSuperview().offset(-80)
+        }
+        
     }
     
     private func settingsWebView() {
@@ -220,6 +256,8 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             
             // HTML 파일 로드
             loadWebView()
+        
+            mapWithWebView()
         }
     
     private func loadWebView() {
@@ -253,7 +291,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 switch response.result {
                 
                 case .success(let value):
-                    print("성공하였습니다 :: \(value)")
+//                    print("성공하였습니다 :: \(value)")
                     
                     self.onlineDeviceList = value
                     self.nxCamData.onlineDeviceList = value
@@ -283,7 +321,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 switch response.result {
                     
                 case .success(let value):
-                    print("성공하였습니다 :: \(value)")
+//                    print("성공하였습니다 :: \(value)")
                     self.allAssetDeviceList = value
                     self.nxCamData.allAssetDeviceList = value
                     
@@ -312,18 +350,147 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 switch response.result {
                 
                 case .success(let value):
-                    print("성공하였습니다 :: \(value)")
+//                    print("성공하였습니다 :: \(value)")
                     self.allAttachList = value
                     self.nxCamData.allAttachList = value
+//                    print("allAttachList :: \(self.allAttachList)")
                     
                 case .failure(let error):
                     print("apiAllSites - 실패하였습니다 :: \(error)" )
+                    
+                    
                 }
             }
     }
     
-    func settingData() {
+    func siteAssetsCheck() {
+        // 계정 현장 타입별 조회가 필요한 현장 리스트
+        let attachType = userAccount.attachType
+//        let id = userAccount.id
+        let id = userAccount.attachId
         
+        print("MainVC settingData attachType : \(attachType)")
+        print("MainVC settingData id : \(id)")
+        
+        DispatchQueue.global().asyncAfter(deadline: .now() + 3) {
+            DispatchQueue.main.async {
+                switch (attachType) {
+                    // 회사 계정
+                    case "Company":
+        //            print("settingData ===> 1, allAttachList : \(allAttachList) ")
+
+                    for targetContractor in self.allAttachList {
+                        print("settingData ===> 2, targetContractor.parentId : \(targetContractor.parentId) ")
+                            // 계정 company 아래에 있는 contractor 조회
+                            if let parentId = targetContractor.parentId, parentId == id {
+                                print("settingData 같은 아이디 있다!!")
+                                for targetSite in self.allAttachList {
+                                    // 특정 contractor 아래에 있는 site 조회
+                                    if let siteParentId = targetSite.parentId, siteParentId == targetContractor.id {
+                                        self.userAccessibleAllSitesList.append(targetSite)
+                                        print("settingData ===> 3, Company, siteParentId : \(siteParentId) ")
+                                    }
+                                }
+                            }
+                        }
+                    
+                        // 현장 전체 장비 리스트
+                    for targerAsset in self.allAssetDeviceList {
+                        for accessibleSites in self.userAccessibleAllSitesList {
+                                if let attachId = targerAsset.attach?.id, attachId == accessibleSites.id {
+                                    self.allSiteAssetList.append(targerAsset)
+                                    print("settingData ===> Company, attachId : \(attachId) ")
+                                }
+                            }
+                        }
+                        
+                        // 온라인 장비 중 계정 현장에 해당하는 장비 리스트
+                    self.checkOnlineDeviceList()
+                        
+                    
+                    case "Contractor":
+                    for targetSite in self.allAttachList {
+                            if let parentId = targetSite.parentId, parentId == id {
+                                self.userAccessibleAllSitesList.append(targetSite)
+                                print("settingData ===> Contractor, parentId : \(parentId) ")
+                            }
+                        }
+                    
+                        // 현장 전체 장비 리스트
+                    for targerAsset in self.allAssetDeviceList {
+                        for accessibleSites in self.userAccessibleAllSitesList {
+                                if let attachId = targerAsset.attach?.id, attachId == accessibleSites.id {
+                                    self.allSiteAssetList.append(targerAsset)
+                                    print("settingData ===> Contractor, attachId : \(attachId) ")
+                                }
+                            }
+                        }
+                    
+                        // 온라인 장비 중 계정 현장에 해당하는 장비 리스트
+                    self.checkOnlineDeviceList()
+                        
+                    
+                    case "Site":
+        //                    userAccessibleAllSitesList.append(userAccount)
+                    
+                    for targetAsset in self.allAssetDeviceList {
+                            if let attachId = targetAsset.attach?.id, attachId == id {
+                                self.allSiteAssetList.append(targetAsset)
+                                print("settingData ===> Site, attachId : \(attachId) ")
+                            }
+                        }
+                        
+                        // 온라인 장비 중 계정 현장에 해당하는 장비 리스트
+                    self.checkOnlineDeviceList()
+                        
+                    
+                    default:
+                        break
+                }
+                
+                // 계정에 허용된 현장 리스트 저장
+                //
+                // 현장들 전체 장비 리스트 저장
+                //
+                
+                // 현장 온라인장비 저장
+                self.nxCamData.deviceInfoList.append(contentsOf: self.onlineSiteAssetList)
+                
+                
+                
+                
+                // Simple Foreground Service(push notification)에서 앱 종료 후에도 계정이 받아야 할 푸쉬알림 분류를 위한 현장 ID 저장
+                var siteAssetsStringList: [String] = []
+
+                // allSiteAssetList는 AssetData 배열이라고 가정합니다.
+                for asset in self.allSiteAssetList {
+                    let assetId = asset.id
+                    siteAssetsStringList.append(String(assetId))
+                }
+
+                // "siteAssets" 키로 UserDefaults에 저장
+                let assetsString = siteAssetsStringList.joined(separator: "|")
+                UserDefaults.standard.set(assetsString, forKey: "siteAssets")
+
+                print("Saved Site Assets: \(assetsString)")
+            }
+        }
+
+    }
+    
+    func checkOnlineDeviceList() {
+        // 전체 온라인 장비 리스트
+        for targetOnlineDevice in onlineDeviceList {
+            // 계정이 접근 가능한 현장의 전체 장비 리스트
+            for targetSiteAsset in allSiteAssetList {
+                if let sessionId = Int(targetOnlineDevice.sessionId), sessionId == targetSiteAsset.id {
+                    // 온라인 장비 api의 "장비 이름" 말고 장비 정보 api의 "장비 이름" 입력
+//                    targetOnlineDevice.set
+                    print("checkOnlineDeviceList ==> targetSiteAsset.name : \(String(describing: targetSiteAsset.name)) ")
+                    onlineSiteAssetList.append(targetOnlineDevice)
+                }
+            }
+        }
     }
 }
 

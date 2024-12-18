@@ -23,17 +23,17 @@ extension UIViewController {
         // Button (optional)
         if isBackButtonVisible {
             // 뒤로가기 버튼
-            let backButton = UIButton(type: .system)
-            backButton.setImage(UIImage(systemName: "chevron.backward"), for: .normal)
-            backButton.tintColor = .white
-            backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
-            customView.addSubview(backButton)
-                    
-            backButton.snp.makeConstraints { make in
-                make.centerY.equalToSuperview()
-                make.leading.equalToSuperview().offset(-10)
-                make.width.height.equalTo(44)
-            }
+//            let backButton = UIButton(type: .system)
+//            backButton.setImage(UIImage(systemName: "chevron.backward"), for: .normal)
+//            backButton.tintColor = .white
+//            backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
+//            customView.addSubview(backButton)
+//                    
+//            backButton.snp.makeConstraints { make in
+//                make.centerY.equalToSuperview()
+//                make.leading.equalToSuperview().offset(-10)
+//                make.width.height.equalTo(44)
+//            }
             
         } else {
             // 설정 버튼
@@ -58,9 +58,24 @@ extension UIViewController {
         titleLabel.font = UIFont.boldSystemFont(ofSize: 17)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         customView.addSubview(titleLabel)
-        
-        titleLabel.snp.makeConstraints { make in
-            make.center.equalToSuperview()
+
+        // 텍스트 길이에 따른 레이아웃 처리
+        if titleString.count > 30 { // 10자를 기준으로 길이 판별
+            // 길이가 긴 경우 leading, trailing 설정
+            titleLabel.textAlignment = .left
+            titleLabel.snp.makeConstraints { make in
+                make.centerY.equalToSuperview() // 세로 중심 정렬 유지
+                make.leading.equalToSuperview().offset(20)
+                make.trailing.equalToSuperview().offset(-45)
+            }
+        } else {
+            // 짧은 경우 가운데 정렬
+            titleLabel.textAlignment = .center
+            titleLabel.snp.makeConstraints { make in
+                make.center.equalToSuperview() // 완전히 중앙 정렬
+                make.leading.greaterThanOrEqualToSuperview().offset(20) // 레이아웃 여유 확보
+                make.trailing.lessThanOrEqualToSuperview().offset(-20)
+            }
         }
         
         // Navigation 설정 변경
@@ -69,6 +84,7 @@ extension UIViewController {
         self.navigationController?.navigationBar.isTranslucent = false // 투명도 해제
         changeStatusBarBgColor(bgColor: #colorLiteral(red: 0.2528479099, green: 0.4240060449, blue: 0.8678660989, alpha: 1))
         
+
         // Ensure Status Bar text is white
         self.setNeedsStatusBarAppearanceUpdate()
     }
@@ -76,9 +92,13 @@ extension UIViewController {
     // SettingButton Action
     @objc private func settingsButtonTapped() {
             print("Settings button tapped!")
-            let createAdNavController = self.storyboard?.instantiateViewController(withIdentifier: "SettingsNav") as! UINavigationController
-            createAdNavController.modalPresentationCapturesStatusBarAppearance = true
-            self.present(createAdNavController, animated: true, completion: nil)
+//            let createAdNavController = self.storyboard?.instantiateViewController(withIdentifier: "SettingsNav") as! UINavigationController
+//            createAdNavController.modalPresentationCapturesStatusBarAppearance = false
+//            self.present(createAdNavController, animated: true, completion: nil)
+        
+        guard let settingsVC = self.storyboard?.instantiateViewController(withIdentifier: "SettingsViewController") as? SettingsViewController else { return }
+
+        self.navigationController?.pushViewController(settingsVC, animated: true)
     }
     
     // BackButton Action

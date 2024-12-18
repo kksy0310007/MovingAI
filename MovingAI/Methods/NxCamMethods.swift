@@ -25,6 +25,24 @@ class NxCamMethods {
     var allAttachList: [AttachData] = []
     
    
+    // 선택한 장비 현장 ID
+    var selectedSiteID: Int = 0
+    // 선택한 현장 데이터
+    var selectedSiteData: AttachData? = nil
+    
+    
+    // 온라인 장비 리스트
+    var deviceInfoList: [NxCamDeviceInfo] = []
+    
+    // 선택한 장비  정보
+    var selectedDeviceInfo: NxCamDeviceInfo? = nil
+    
+    
+    
+    
+    
+    
+    
     
     private init() {
         

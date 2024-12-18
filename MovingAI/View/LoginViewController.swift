@@ -25,10 +25,10 @@ class LoginViewController: UIViewController {
     var id: String = ""
     var pw: String = ""
     
-    var testId = "admin_ys"
-    var testPW = "12345678a"
-//    var testId = "hdjs00"
-//    var testPW = "123qwe"
+//    var testId = "admin_ys"
+//    var testPW = "12345678a"
+    var testId = "hdjs00"
+    var testPW = "123qwe"
     
     
     let userAccount = UserAccountMethods.shared
@@ -43,9 +43,7 @@ class LoginViewController: UIViewController {
         // 권한 묻기
         permissionViewModel.requestPermission()
         
-        
-        
-        
+    
         // 키보드 이벤트 감지 등록
             NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -353,7 +351,7 @@ class LoginViewController: UIViewController {
              .responseDecodable(of: MovingAiUserAccount.self) { response in
                  switch response.result {
                  case .success(let value):
-                     print("성공하였습니다 :: \(value)")
+//                     print("성공하였습니다 :: \(value)")
                      
                      if (self.isAutoLogin) {
                          UserDefaults.standard.set(encodeUserName, forKey: "id")
@@ -361,14 +359,14 @@ class LoginViewController: UIViewController {
                      }
                      
                     // 싱클톤으로 값 저장
-                     self.userAccount.id = encodeUserName
+                     self.userAccount.name = encodeUserName
                      self.userAccount.isAutoLogin = self.isAutoLogin
                      self.userAccount.movingAIUserAccount = value
-                         
+                     self.userAccount.id = value.id
                      self.userAccount.attachId = value.attach.id
                      self.userAccount.attachType = value.attach.attachType ?? "Company"
                      self.userAccount.title = value.attach.name
-                         
+                    
                     // 화면 이동
                      self.updateUI()
                      

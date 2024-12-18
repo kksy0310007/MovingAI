@@ -10,13 +10,13 @@ import Foundation
 struct AssetKind: Codable {
     let id: Int
     let type: String
-    let name: String
+    let name: String?
     let description: String?
 }
 
 struct Attach: Codable {
     let id: Int
-    let name: String
+    let name: String?
     let attachType: String
     let etc1: String?
     let etc2: String?
