@@ -10,6 +10,7 @@ import CoreLocation
 import SnapKit
 import WebKit
 import Alamofire
+import iOSDropDown
 
 class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler {
     
@@ -38,6 +39,11 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     let userAccount = UserAccountMethods.shared
     let nxCamData = NxCamMethods.shared
     
+    
+    let backgroundView = UIView()
+    let dropDown = DropDown()
+    // DropDown 데이터를 담을 배열
+    var dropDownDataSource: [String] = []
     
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         print(message.name)
@@ -78,9 +84,9 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         
         // 웹 뷰 초기화 및 설정
         settingsWebView()
-        
         self.webView.reload()
         
+        initDropDown()
         
     }
     
@@ -198,7 +204,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         }
         
         // 리스트 back UIView
-        let backgroundView = UIView()
         backgroundView.backgroundColor = .white
         backgroundView.layer.cornerRadius = 20
         backgroundView.layer.borderWidth = 3
@@ -215,7 +220,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             make.leading.equalToSuperview().offset(80)
             make.trailing.equalToSuperview().offset(-80)
         }
-        
+
     }
     
     private func settingsWebView() {
@@ -488,11 +493,44 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
 //                    targetOnlineDevice.set
                     print("checkOnlineDeviceList ==> targetSiteAsset.name : \(String(describing: targetSiteAsset.name)) ")
                     onlineSiteAssetList.append(targetOnlineDevice)
+                    // 드롭다운 리스트
+                    setDropDown()
                 }
             }
         }
     }
+    
+    
+    // DropDown 메뉴 구성
+    func initDropDown() {
+        backgroundView.addSubview(dropDown)
+        dropDown.snp.makeConstraints { make in
+            make.top.bottom.equalToSuperview()
+            make.leading.equalToSuperview().offset(20)
+            make.trailing.equalToSuperview().offset(-20)
+            make.height.equalTo(45)
+        }
+        dropDown.isSearchEnable = false
+        dropDown.selectedRowColor = .white
+        dropDown.checkMarkEnabled = false
+        dropDown.text = "장비 선택"
+        
+    }
+    
+    func setDropDown() {
+//        dropDownDataSource.append("장비 선택")
+        dropDownDataSource.append(contentsOf: onlineSiteAssetList.compactMap { $0.deviceName })
+        dropDown.optionArray = dropDownDataSource
+        
+        print("@@#@#@#@#@#@ => setDropDown : \(dropDownDataSource)")
+        
+        dropDown.didSelect { selectedText, index, id in
+            print("Selected : \(index)")
+            
+        }
+    }
 }
+
 
 
 extension MainViewController: CLLocationManagerDelegate {
