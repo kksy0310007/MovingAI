@@ -280,6 +280,9 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     func apiOnlineDevices() -> Void{
         print("apiOnlineDevices 호출 시작!")
         
+        // 로딩 시작
+        LoadingIndicator.shared.show()
+        
         let headers: HTTPHeaders = [
             "Authorization": "test",
             "Accept": "application/json"
@@ -478,6 +481,9 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 UserDefaults.standard.set(assetsString, forKey: "siteAssets")
 
                 print("Saved Site Assets: \(assetsString)")
+                
+                // 로딩 종료
+                LoadingIndicator.shared.hide()
             }
         }
 
@@ -527,6 +533,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         dropDown.didSelect { selectedText, index, id in
             print("Selected : \(index)")
             
+            // 해당 데이터의 위치에 맵 포커스 맞춤
         }
     }
 }
@@ -556,39 +563,5 @@ extension MainViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("locationManager >> didFailWithError ")
     }
-    
-    /**
-     * checkAuthorizationStatus()
-     * - 권한 상태 확인하기
-     **/
-//    func checkAuthorizationStatus() {
-//
-//        if #available(iOS 14.0, *) {
-//
-//            if locationManager.authorizationStatus == .authorizedAlways
-//                || locationManager.authorizationStatus == .authorizedWhenInUse {
-//                print("==> 위치 서비스 On 상태")
-//                locationManager.startUpdatingLocation() //위치 정보 받아오기 시작 - 사용자의 현재 위치를 보고하는 업데이트 생성을 시작
-//            } else if locationManager.authorizationStatus == .notDetermined {
-//                print("==> 위치 서비스 Off 상태")
-//                locationManager.requestWhenInUseAuthorization()
-//            } else if locationManager.authorizationStatus == .denied {
-//                print("==> 위치 서비스 Deny 상태")
-//            }
-//
-//        } else {
-//
-//            // Fallback on earlier versions
-//            if CLLocationManager.locationServicesEnabled() {
-//                print("위치 서비스 On 상태")
-//                locationManager.startUpdatingLocation() //위치 정보 받아오기 시작 - 사용자의 현재 위치를 보고하는 업데이트 생성을 시작
-//                print("LocationViewController >> checkPermission() - \(String(describing: locationManager.location?.coordinate))")
-//            } else {
-//                print("위치 서비스 Off 상태")
-//                locationManager.requestWhenInUseAuthorization()
-//            }
-//
-//        }
-//    }
-    
+ 
 }
