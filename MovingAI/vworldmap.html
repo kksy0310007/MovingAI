@@ -30,6 +30,8 @@
   <script type="text/javascript">
   
     var selectMarker;
+    
+    var agent = navigator.userAgent.toLowerCase();
 
     vw.ol3.MapOptions = {
       basemapType: vw.ol3.BasemapType.GRAPHIC,
@@ -54,7 +56,20 @@
           // vmap.clear();
           console.log(feature.get('title'));
           // java 메소드 실행하도록 명령 전송
-          MarkerInterface.startCamMonitoring(feature.get('title'));
+          
+          if ( agent.indexOf('android') > -1 ) {
+              console.log("android");
+              MarkerInterface.startCamMonitoring(feature.get('title'));
+          } else if ( agent.indexOf("iphone") > -1 || agent.indexOf("ipad") > -1 || agent.indexOf("ipod") > -1) {
+              console.log("iOS");
+              window.webkit.messageHandlers.callbackHandler.postMessage("MarkerInterface");
+          } else {
+              console.log("else");
+          }
+          
+          
+          
+          
           // 새로운 popup 인스턴스 집어넣기(popup 사라짐)
           vmap.addOverlay(new vw.ol3.popup.Popup());
         } else {

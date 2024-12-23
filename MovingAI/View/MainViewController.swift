@@ -45,12 +45,14 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     // DropDown 데이터를 담을 배열
     var dropDownDataSource: [String] = []
     
+    @available(iOS 8.0, *)
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        print(message.name)
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!\(message.name)")
         if (message.name == "MarkerInterface") {
             print("\(message.body)")
         }
     }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -116,8 +118,11 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     } else {
                         print("mapSetCenterFromGPS - JavaScript executed successfully: \(result ?? "No result")")
                     }
+                    
+                    LoadingIndicator.shared.hide()
                     self.addMarkerLayer()
                     self.makeAddMarkerLayer()
+                    
                 }
             }
         }
@@ -230,11 +235,13 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             preferences.javaScriptCanOpenWindowsAutomatically = true
             let contentController = WKUserContentController() // 웹 뷰와 javaScript간의 상호작용 관리
             // 사용 할 메시지 등록
+            let markerInterface = SelectCamFromMarkerInterface(context: self, deviceList: onlineSiteAssetList)
+//            contentController.add(markerInterface, name: "MarkerInterface")
             contentController.add(self, name: "MarkerInterface")
-    
+        
+        
             // preference, contentController 설정
             let configuration = WKWebViewConfiguration()
-//            configuration.suppressesIncrementalRendering = false
             configuration.userContentController = contentController
             configuration.preferences = preferences
             
@@ -264,6 +271,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         
             mapWithWebView()
         }
+
     
     private func loadWebView() {
         
@@ -362,6 +370,47 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     self.allAttachList = value
                     self.nxCamData.allAttachList = value
 //                    print("allAttachList :: \(self.allAttachList)")
+                    
+                case .failure(let error):
+                    print("apiAllSites - 실패하였습니다 :: \(error)" )
+                    
+                    
+                }
+            }
+    }
+    
+    func apiGetAssetsData(id: Int){
+        print("apiGetAssetsData 호출 시작!")
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "test",
+            "Accept": "application/json"
+        ]
+        
+        let url = "\(baseDataApiUrl)/asset/\(id)"
+        
+        // 통신
+        
+        AF.request(
+            url,
+            method: .get,
+            headers: headers
+        ).validate(statusCode: 200..<300) // 상태 코드 유효성 검증
+            .responseDecodable(of: [AttachData].self) { response in
+                switch response.result {
+                
+                case .success(let value):
+                    print("성공하였습니다 :: \(value)")
+                    // 첫 번째 AttachData만 사용
+                    if let firstData = value.first,
+                        let latitude = firstData.lat,
+                        let longitude = firstData.lng {
+                        
+                        self.mapSetCenterFromGPS(lon: longitude, lat: latitude)
+                        
+                    } else {
+                            print("장비의 위치정보가 없습니다.")
+                    }
                     
                 case .failure(let error):
                     print("apiAllSites - 실패하였습니다 :: \(error)" )
@@ -524,7 +573,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     }
     
     func setDropDown() {
-//        dropDownDataSource.append("장비 선택")
         dropDownDataSource.append(contentsOf: onlineSiteAssetList.compactMap { $0.deviceName })
         dropDown.optionArray = dropDownDataSource
         
@@ -533,7 +581,21 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         dropDown.didSelect { selectedText, index, id in
             print("Selected : \(index)")
             
+            // 로딩 시작
+            LoadingIndicator.shared.show()
+            
             // 해당 데이터의 위치에 맵 포커스 맞춤
+            // 선택된 이름과 매칭되는 데이터 검색
+            if let selectedDevice = self.onlineSiteAssetList.first(where: { $0.deviceName == selectedText }) {
+                    let sessioid = selectedDevice.sessionId
+                    
+                    print("Selected Device sessionId: \(sessioid)")
+                
+                    self.apiGetAssetsData(id: Int(sessioid)!)
+
+                } else {
+                    print("No matching device found for \(selectedText)")
+                }
         }
     }
 }

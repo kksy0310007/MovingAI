@@ -5,6 +5,8 @@
 //  Created by soyoung on 12/13/24.
 //
 
+import UIKit
+
 
 var loginApiUrl: String = "https://moving-ai.com/outside/" // 로그인
 
@@ -40,7 +42,22 @@ class NxCamMethods {
     
     
     
+    func getDeviceInfoList() -> [NxCamDeviceInfo] {
+        return deviceInfoList
+    }
     
+    func setDeviceInfoList(_ list: [NxCamDeviceInfo]) {
+        deviceInfoList = list
+    }
+    
+    func setSelectedDeviceInfo(_ device: NxCamDeviceInfo) {
+        selectedDeviceInfo = device
+    }
+    
+    func changeScreen(_ context: UIViewController, to viewControllerType: UIViewController.Type) {
+        let nextVC = viewControllerType.init()
+        context.navigationController?.pushViewController(nextVC, animated: true)
+    }
     
     
     
