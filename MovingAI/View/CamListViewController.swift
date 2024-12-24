@@ -14,7 +14,7 @@ class CamListViewController: UIViewController {
         super.viewDidLoad()
         
         // 상단 타이틀 바
-        addNavigationBar(titleString: "CamListViewController",isBackButtonVisible: false)
+        addNavigationBar(titleString: "실시간 목록",isBackButtonVisible: false)
     }
 
 

@@ -11,6 +11,7 @@ import SnapKit
 import WebKit
 import Alamofire
 import iOSDropDown
+import SwiftyToaster
 
 class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler {
     
@@ -577,6 +578,10 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         dropDown.optionArray = dropDownDataSource
         
         print("@@#@#@#@#@#@ => setDropDown : \(dropDownDataSource)")
+        
+        if (dropDownDataSource.count == 0) {
+            Toaster.shared.makeToast("연결된 장비가 없습니다.", .middle)
+        }
         
         dropDown.didSelect { selectedText, index, id in
             print("Selected : \(index)")

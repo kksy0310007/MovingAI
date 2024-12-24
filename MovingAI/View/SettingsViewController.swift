@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftyToaster
 
 class SettingsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
@@ -79,10 +80,63 @@ class SettingsViewController: UIViewController, UITableViewDataSource, UITableVi
         switch indexPath.row {
             case 0:
                 // 푸시 알림 설정 화면 이동 -> SettingsNotificationActivity
+            
+            guard let pushSettingVC = self.storyboard?.instantiateViewController(withIdentifier: "PushSettingViewController") as? PushSettingViewController else { return }
+            self.navigationController?.pushViewController(pushSettingVC, animated: true)
+            self.navigationController?.modalPresentationStyle = .fullScreen
+            
                 break
+            
             case 1:
                 // 로그아웃 팝업
+                let alert = UIAlertController(title: "", message: "로그아웃 하시겠습니까?", preferredStyle: .alert)
+
+                alert.addAction(UIAlertAction(title: "확인", style: .destructive, handler: { _ in
+                    print("yes 클릭")
+                    
+                    // userDefualt 지우기
+                    UserDefaults.standard.removeObject(forKey: "id")
+                    UserDefaults.standard.removeObject(forKey: "pwd")
+                    UserDefaults.standard.removeObject(forKey: "isAutoLogin")
+                    
+                    // SimpleForegroundService stop
+                    // NxCamMethods -> logoutAccount
+                    // 로그인 화면으로 돌아가기
+
+                    
+                    guard let loginVC = self.storyboard?.instantiateViewController(withIdentifier: "LoginViewController") as? LoginViewController else { return }
+                    self.navigationController?.pushViewController(loginVC, animated: true)
+                    self.navigationController?.modalPresentationStyle = .fullScreen
+                    self.navigationController?.navigationBar.isHidden = true
+                    self.navigationController?.interactivePopGestureRecognizer?.isEnabled = false // 제스처 막기
+                    
+                    // 모든 기존 뷰를 초기화하고 새로운 화면 설정
+                    if #available(iOS 15, *) {
+                        // iOS 15 이상
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                            if let window = windowScene.windows.first {
+                                window.rootViewController = self.navigationController
+                                window.makeKeyAndVisible()
+                            }
+                        }
+                    } else {
+                        // iOS 14 이하
+                        if let window = UIApplication.shared.windows.first {
+                            window.rootViewController = self.navigationController
+                            window.makeKeyAndVisible()
+                        }
+                    }
+                    
+                    Toaster.shared.makeToast("로그아웃 했습니다.", .short)
+                }))
+
+                alert.addAction(UIAlertAction(title: "아니요", style: .cancel, handler: { _ in
+                    alert.dismiss(animated: false)
+                }))
+
+                present(alert, animated: true)
                 break
+            
             default:
                 break
             

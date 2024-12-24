@@ -11,6 +11,7 @@
 		6E4BD6A82D0C08E20051E531 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 6E4BD6A72D0C08E20051E531 /* Alamofire */; };
 		6E4BD6AD2D0C10AB0051E531 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E4BD6AC2D0C10AB0051E531 /* WebKit.framework */; };
 		6E4BD87C2D14099C0051E531 /* iOSDropDown in Frameworks */ = {isa = PBXBuildFile; productRef = 6E4BD87B2D14099C0051E531 /* iOSDropDown */; };
+		6E4BD90C2D1A853B0051E531 /* SwiftyToaster in Frameworks */ = {isa = PBXBuildFile; productRef = 6E4BD90B2D1A853B0051E531 /* SwiftyToaster */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +47,7 @@
 			files = (
 				6E4BD6AD2D0C10AB0051E531 /* WebKit.framework in Frameworks */,
 				6E4BD6622D02947F0051E531 /* SnapKit in Frameworks */,
+				6E4BD90C2D1A853B0051E531 /* SwiftyToaster in Frameworks */,
 				6E4BD6A82D0C08E20051E531 /* Alamofire in Frameworks */,
 				6E4BD87C2D14099C0051E531 /* iOSDropDown in Frameworks */,
 			);
@@ -102,6 +104,7 @@
 				6E4BD6612D02947F0051E531 /* SnapKit */,
 				6E4BD6A72D0C08E20051E531 /* Alamofire */,
 				6E4BD87B2D14099C0051E531 /* iOSDropDown */,
+				6E4BD90B2D1A853B0051E531 /* SwiftyToaster */,
 			);
 			productName = MovingAI;
 			productReference = 6E4BD62A2D014A120051E531 /* MovingAI.app */;
@@ -135,6 +138,7 @@
 				6E4BD6602D02947F0051E531 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				6E4BD6A62D0C08E20051E531 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				6E4BD87A2D14099C0051E531 /* XCRemoteSwiftPackageReference "iOSDropDown" */,
+				6E4BD90A2D1A853B0051E531 /* XCRemoteSwiftPackageReference "SwiftyToaster" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6E4BD62B2D014A120051E531 /* Products */;
@@ -392,6 +396,14 @@
 				minimumVersion = 0.4.0;
 			};
 		};
+		6E4BD90A2D1A853B0051E531 /* XCRemoteSwiftPackageReference "SwiftyToaster" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/noeyiz/SwiftyToaster";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -409,6 +421,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6E4BD87A2D14099C0051E531 /* XCRemoteSwiftPackageReference "iOSDropDown" */;
 			productName = iOSDropDown;
+		};
+		6E4BD90B2D1A853B0051E531 /* SwiftyToaster */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6E4BD90A2D1A853B0051E531 /* XCRemoteSwiftPackageReference "SwiftyToaster" */;
+			productName = SwiftyToaster;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

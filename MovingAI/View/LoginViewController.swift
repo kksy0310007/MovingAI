@@ -356,6 +356,7 @@ class LoginViewController: UIViewController {
                      if (self.isAutoLogin) {
                          UserDefaults.standard.set(encodeUserName, forKey: "id")
                          UserDefaults.standard.set(encodePW,forKey: "pwd")
+                         UserDefaults.standard.set(true,forKey: "isAutoLogin")
                      }
                      
                     // 싱클톤으로 값 저장
