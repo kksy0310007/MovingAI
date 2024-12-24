@@ -127,10 +127,10 @@
             </objects>
             <point key="canvasLocation" x="2167.1755725190837" y="1833.8028169014085"/>
         </scene>
-        <!--Push Setting View Controller-->
+        <!--Push Settings View Controller-->
         <scene sceneID="jLe-G0-xbZ">
             <objects>
-                <viewController storyboardIdentifier="PushSettingViewController" id="hw6-D9-sEv" customClass="PushSettingViewController" customModule="MovingAI" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="PushSettingsViewController" id="hw6-D9-sEv" customClass="PushSettingsViewController" customModule="MovingAI" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="RX8-da-OQf">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

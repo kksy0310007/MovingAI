@@ -81,7 +81,7 @@ class SettingsViewController: UIViewController, UITableViewDataSource, UITableVi
             case 0:
                 // 푸시 알림 설정 화면 이동 -> SettingsNotificationActivity
             
-            guard let pushSettingVC = self.storyboard?.instantiateViewController(withIdentifier: "PushSettingViewController") as? PushSettingViewController else { return }
+            guard let pushSettingVC = self.storyboard?.instantiateViewController(withIdentifier: "PushSettingsViewController") as? PushSettingsViewController else { return }
             self.navigationController?.pushViewController(pushSettingVC, animated: true)
             self.navigationController?.modalPresentationStyle = .fullScreen
             
