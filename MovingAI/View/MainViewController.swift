@@ -39,7 +39,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     // 데이터 저장
     let userAccount = UserAccountMethods.shared
     let nxCamData = NxCamMethods.shared
-    
+    let topAssets = TopAssetsMethods.shared
     
     let backgroundView = UIView()
     let dropDown = DropDown()
@@ -514,8 +514,8 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 // 현장 온라인장비 저장
                 self.nxCamData.deviceInfoList.append(contentsOf: self.onlineSiteAssetList)
                 
-                
-                
+                // 전체 장비 리스트
+                self.topAssets.setAllSitesAssetsList(self.allSiteAssetList)
                 
                 // Simple Foreground Service(push notification)에서 앱 종료 후에도 계정이 받아야 할 푸쉬알림 분류를 위한 현장 ID 저장
                 var siteAssetsStringList: [String] = []
