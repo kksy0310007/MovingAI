@@ -96,10 +96,20 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     private func mapWithWebView() {
         let selectedSite = userAccount.movingAIUserAccount?.attach
         
+        print("???????? selectedSite?.lng : \(selectedSite?.lng), selectedSite?.lat : \(selectedSite?.lat)")
         if (selectedSite?.lng != nil && selectedSite?.lat != nil) {
-            mapSetCenterFromGPS(lon: (selectedSite?.lng)!, lat: (selectedSite?.lat)!)
+            if (selectedSite?.lat != 0.0 || selectedSite?.lng != 0.0 ) {
+                mapSetCenterFromGPS(lon: (selectedSite?.lng)!, lat: (selectedSite?.lat)!)
+            } else {
+                print("위치정보가 존재하지 않습니다.")
+                Toaster.shared.makeToast("위치정보가 존재하지 않습니다.", .middle)
+                mapSetCenterFromGPS(lon: self.longitude, lat: self.latitude)
+            }
+            
         } else {
             print("계정에 위치값이 없습니다. 현재 위치로 맵 포커스 이동.")
+           
+            Toaster.shared.makeToast("위치정보가 존재하지 않습니다.", .middle)
             mapSetCenterFromGPS(lon: self.longitude, lat: self.latitude)
         }
     }
@@ -616,6 +626,7 @@ extension MainViewController: CLLocationManagerDelegate {
             latitude = location.coordinate.latitude
             longitude = location.coordinate.longitude
             print("위도: \(latitude), 경도: \(longitude)")
+            mapWithWebView()
         }
         locationManager.stopUpdatingLocation()
     }

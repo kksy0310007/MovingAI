@@ -25,10 +25,17 @@ class LoginViewController: UIViewController {
     var id: String = ""
     var pw: String = ""
     
+//    var testId = "dwgc00"
+//    var testPW = "123qwe"
+
+    var testId = "YS-WJSC"
+    var testPW = "123qwe"
+    
+//    var testId = "hdjs00"
+//    var testPW = "123qwe"
+    
 //    var testId = "admin_ys"
 //    var testPW = "12345678a"
-    var testId = "hdjs00"
-    var testPW = "123qwe"
     
     
     let userAccount = UserAccountMethods.shared

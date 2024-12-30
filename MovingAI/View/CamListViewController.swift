@@ -103,6 +103,9 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("select \(indexPath.row)")
         
+        guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else { return }
+
+        self.navigationController?.pushViewController(camMonitorVC, animated: true)
     }
 
 }
