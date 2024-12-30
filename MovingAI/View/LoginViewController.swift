@@ -25,11 +25,11 @@ class LoginViewController: UIViewController {
     var id: String = ""
     var pw: String = ""
     
-//    var testId = "dwgc00"
-//    var testPW = "123qwe"
-
-    var testId = "YS-WJSC"
+    var testId = "dwgc00"
     var testPW = "123qwe"
+
+//    var testId = "YS-WJSC"
+//    var testPW = "123qwe"
     
 //    var testId = "hdjs00"
 //    var testPW = "123qwe"

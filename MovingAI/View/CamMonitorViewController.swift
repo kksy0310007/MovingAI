@@ -17,40 +17,24 @@ class CamMonitorViewController: UIViewController {
     var monitorButtonsView = UIView()
     
     // 모니터 뷰 버튼
-    var channel1Button: UIButton! = {
-        let button = UIButton()
-        button.setTitle("Ch 1", for: .normal)
-        button.setTitleColor(.black, for: .normal)
-        button.backgroundColor = .lightGray
-        button.tintColor = #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1)
-        button.layer.cornerRadius = 5
-        button.addTarget(self, action: #selector(channel1ButtonAction), for: .touchUpInside)
-
-        return button
-    }()
-    
-    var channel2Button: UIButton! = {
-        let button = UIButton()
-        button.setTitle("Ch 2", for: .normal)
-        button.setTitleColor(.black, for: .normal)
-        button.backgroundColor = .lightGray
-        button.tintColor = #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1)
-        button.layer.cornerRadius = 5
-        button.addTarget(self, action: #selector(channel2ButtonAction), for: .touchUpInside)
-        return button
+    let channelSwitch: CustomSwitch = {
+        let view = CustomSwitch()
+        view.barColor = .lightGray
+        view.circleColor = .white
+        view.isUserInteractionEnabled = true
+        view.addTarget(self, action: #selector(channelSwitchAction), for: .touchUpInside)
+        return view
     }()
     
     private let channelLabel : UILabel = {
         let label = UILabel()
         label.text = "Ch 1"
         label.textColor = .white
-//        label.font = UIFont.systemFont(ofSize: 14)
         return label
     }()
     
     var fullScreenButton: UIButton! = {
         let button = UIButton()
-        
         button.backgroundColor = .clear
         button.tintColor = .white
         let image = UIImage(systemName: "viewfinder")!
@@ -64,16 +48,6 @@ class CamMonitorViewController: UIViewController {
     
     // 컨트롤러 뷰 버튼
     // 음성송출 버튼
-//    var micButton: UIButton! = {
-//        let button = UIButton()
-//        button.backgroundColor = .clear
-//        button.tintColor = .gray
-//        let imageConfig = UIImage.SymbolConfiguration(pointSize: 30, weight: .light)
-//        let image = UIImage(systemName: "microphone.fill", withConfiguration: imageConfig)
-//        button.contentMode = .scaleToFill
-//        button.setImage(image, for: .normal)
-//        return button
-//    }()
     var micImageView: UIImageView = {
         let image = UIImageView()
         image.image = UIImage(systemName: "microphone.fill")
@@ -94,16 +68,6 @@ class CamMonitorViewController: UIViewController {
     var micView = UIView()
     
     // 안내방송 버튼
-//    var playButton: UIButton! = {
-//        let button = UIButton()
-//        button.backgroundColor = .clear
-//        button.tintColor = .gray
-//        let imageConfig = UIImage.SymbolConfiguration(pointSize: 30, weight: .light)
-//        let image = UIImage(systemName: "play.square.stack.fill", withConfiguration: imageConfig)
-//        button.contentMode = .scaleToFill
-//        button.setImage(image, for: .normal)
-//        return button
-//    }()
     var playImageView: UIImageView = {
         let image = UIImageView()
         image.image = UIImage(systemName: "play.square.stack.fill")
@@ -276,6 +240,7 @@ class CamMonitorViewController: UIViewController {
         
         // 2. 작은화면 버튼
         self.view.addSubview(monitorButtonsView)
+        monitorButtonsView.isUserInteractionEnabled = true
         monitorButtonsView.backgroundColor = .clear
         monitorButtonsView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
@@ -291,21 +256,13 @@ class CamMonitorViewController: UIViewController {
         monitorButtonsView.addGestureRecognizer(tapButtonsViewGesture)
         
         // 버튼 추가
-        self.monitorButtonsView.addSubview(channel1Button)
-        self.monitorButtonsView.addSubview(channel2Button)
+        self.monitorButtonsView.addSubview(channelSwitch)
         self.monitorButtonsView.addSubview(channelLabel)
         
-        channel2Button.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().offset(-10)
-            make.top.equalToSuperview().offset(10)
-            make.height.equalTo(35)
-            make.width.equalTo(80)
-        }
-        
-        channel1Button.snp.makeConstraints { make in
-            make.trailing.equalTo(channel2Button.snp.leading).offset(-10)
-            make.top.equalToSuperview().offset(10)
-            make.height.equalTo(35)
+        channelSwitch.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-15)
+            make.top.equalToSuperview().offset(15)
+            make.height.equalTo(40)
             make.width.equalTo(80)
         }
         
@@ -348,7 +305,6 @@ class CamMonitorViewController: UIViewController {
             make.height.equalTo(100)
         }
         
-
         controllerView.addSubview(micImageView)
         controllerView.addSubview(playImageView)
         controllerView.addSubview(micLabel)
@@ -430,7 +386,7 @@ class CamMonitorViewController: UIViewController {
         bottomView.addSubview(minusButton)
         
         plusButton.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(60)
+            make.top.equalToSuperview().offset(40)
             make.leading.equalToSuperview().offset(48)
             make.height.width.equalTo(84)
         }
@@ -443,9 +399,7 @@ class CamMonitorViewController: UIViewController {
         
         bottomView.addSubview(controllerBackView)
         controllerBackView.snp.makeConstraints { make in
-//            make.top.equalToSuperview().offset(20)
-            make.centerY.equalToSuperview()
-//            make.leading.equalTo(plusButton.snp.trailing).offset(20)
+            make.centerY.equalToSuperview().offset(-20)
             make.trailing.equalToSuperview().offset(-40)
             make.height.width.equalTo(200)
         }
@@ -492,28 +446,39 @@ class CamMonitorViewController: UIViewController {
     
     
     // MARK: - Actions
-    @objc func channel1ButtonAction(sender: UIButton) {
-        print("select channel1ButtonAction")
-        
-        self.channelLabel.text = "Ch 1"
+    @objc func channelSwitchAction(sender: CustomSwitch) {
+        if sender.isOn {
+            print("select channel2ButtonAction")
+            self.channelLabel.text = "Ch 2"
+        } else {
+            print("select channel1ButtonAction")
+            self.channelLabel.text = "Ch 1"
+        }
     }
     
-    @objc func channel2ButtonAction(sender: UIButton) {
-        print("select channel2ButtonAction")
-        
-        self.channelLabel.text = "Ch 2"
-    }
     
     @objc func fullScreenButtonAction(sender: UIButton) {
         print("select fullScreenButtonAction")
         
     }
     
-    @objc func didTapMonitorButtonsView() {
-        print("select didTapMonitorButtonsView")
-        monitorButtnFlag = false
+    @objc func didTapMonitorButtonsView(sender: UITapGestureRecognizer) {
+        // 터치 위치가 channelSwitch 내부인지 확인
+        let touchLocation = sender.location(in: monitorButtonsView)
         
-        setMonitorButtonsViewFlag()
+        // 터치가 channelSwitch의 영역 안에 있지 않으면 버튼을 숨기기
+        if !channelSwitch.frame.contains(touchLocation) {
+            print("select didTapMonitorButtonsView")
+            monitorButtnFlag = false
+            setMonitorButtonsViewFlag()
+        } else {
+            if self.channelSwitch.isOn {
+                self.channelSwitch.isOn = false
+            } else {
+                self.channelSwitch.isOn = true
+            }
+            
+        }
     }
     
     @objc func didTapMonitorView() {

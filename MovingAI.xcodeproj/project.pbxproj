@@ -24,7 +24,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				View/Untitled.swift,
 			);
 			target = 6E4BD6292D014A120051E531 /* MovingAI */;
 		};
