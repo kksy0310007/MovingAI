@@ -6,11 +6,13 @@
 //
 
 import UIKit
+import SnapKit
 
 class CamMonitorViewController: UIViewController {
 
     // 버튼 보임/가림 처리
     var monitorButtnFlag = true
+    var monitorFullScreenButtnFlag = true
     
     // 모니터 뷰
     var monitorView = UIView()
@@ -100,7 +102,7 @@ class CamMonitorViewController: UIViewController {
         let image = UIImage(systemName: "repeat.circle.fill")!
         button.setImage(image, for: .normal)
         button.imageEdgeInsets = .init(top: 0, left: 0, bottom: 0, right: 5)
-        button.addTarget(self, action: #selector(onButtonButtonAction), for: .touchUpInside)
+        button.addTarget(self, action: #selector(onButtonAction), for: .touchUpInside)
         return button
     }()
     
@@ -115,7 +117,7 @@ class CamMonitorViewController: UIViewController {
         button.backgroundColor = .lightGray
         button.tintColor = #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1)
         button.imageEdgeInsets = .init(top: 0, left: 0, bottom: 0, right: 5)
-        button.addTarget(self, action: #selector(offButtonButtonAction), for: .touchUpInside)
+        button.addTarget(self, action: #selector(offButtonAction), for: .touchUpInside)
         return button
     }()
     
@@ -131,6 +133,7 @@ class CamMonitorViewController: UIViewController {
         button.layer.shadowOffset = CGSize(width: 3, height: 3)
         button.contentMode = .scaleToFill
         button.setImage(image, for: .normal)
+        button.addTarget(self, action: #selector(plusButtonAction), for: .touchUpInside)
         return button
     }()
     
@@ -144,6 +147,7 @@ class CamMonitorViewController: UIViewController {
         button.layer.shadowOffset = CGSize(width: 3, height: 3)
         button.contentMode = .scaleToFill
         button.setImage(image, for: .normal)
+        button.addTarget(self, action: #selector(minusButtonAction), for: .touchUpInside)
         return button
     }()
 
@@ -213,8 +217,179 @@ class CamMonitorViewController: UIViewController {
         return button
     }()
     
+    // fullScreen
     var monitorFullScreenView = UIView()
     var monitorFullScreenButtonsView = UIView()
+    
+    let fullScreenChannelSwitch: CustomSwitch = {
+        let view = CustomSwitch()
+        view.barColor = .lightGray
+        view.circleColor = .white
+        view.isUserInteractionEnabled = true
+        view.addTarget(self, action: #selector(fullScreenChannelSwitchAction), for: .touchUpInside)
+        return view
+    }()
+    
+    private let fullScreenChannelLabel : UILabel = {
+        let label = UILabel()
+        label.text = "Ch 1"
+        label.textColor = .white
+        return label
+    }()
+    
+    private let fullScreenBackButton: UIButton = {
+        let button = UIButton()
+        button.setImage(UIImage(systemName: "chevron.backward"), for: .normal)
+        button.tintColor = .white
+        button.addTarget(self, action: #selector(fullScreenBackButtonTapped), for: .touchUpInside)
+        return button
+    }()
+    
+    // 음성송출 버튼
+    var fullScreenMicButton: UIButton = {
+        let button = UIButton()
+        button.tintColor = .lightGray
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 30, weight: .light)
+        let image = UIImage(systemName: "microphone.fill", withConfiguration: imageConfig)
+        button.setImage(image, for: .normal)
+        button.addTarget(self, action: #selector(didTapMicView), for: .touchUpInside)
+        return button
+    }()
+    
+    // 안내방송 버튼
+    var fullScreenPlayButton: UIButton = {
+        let button = UIButton()
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 30, weight: .light)
+        let image = UIImage(systemName: "play.square.stack.fill", withConfiguration: imageConfig)
+        button.setImage(image, for: .normal)
+        button.tintColor = .lightGray
+        button.addTarget(self, action: #selector(didTapPlayView), for: .touchUpInside)
+        return button
+    }()
+    
+    var fullScreenOnButton: UIButton! = {
+        let button = UIButton()
+        button.setTitle("ON", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.setTitleColor(.black, for: .normal)
+        button.backgroundColor = .lightGray
+        button.tintColor = #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1)
+        button.layer.cornerRadius = 5
+        let image = UIImage(systemName: "repeat.circle.fill")!
+        button.setImage(image, for: .normal)
+        button.imageEdgeInsets = .init(top: 0, left: 0, bottom: 0, right: 5)
+        button.addTarget(self, action: #selector(onButtonAction), for: .touchUpInside)
+        return button
+    }()
+    
+    var fullScreenOffButton: UIButton! = {
+        let button = UIButton()
+        button.setTitle("OFF", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.setTitleColor(.black, for: .normal)
+        let image = UIImage(systemName: "repeat.circle.fill")!
+        button.setImage(image, for: .normal)
+        button.layer.cornerRadius = 5
+        button.backgroundColor = .lightGray
+        button.tintColor = #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1)
+        button.imageEdgeInsets = .init(top: 0, left: 0, bottom: 0, right: 5)
+        button.addTarget(self, action: #selector(offButtonAction), for: .touchUpInside)
+        return button
+    }()
+    
+    var fullScreenPlusButton: UIButton! = {
+        let button = UIButton()
+        button.tintColor = .white
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .light)
+        let image = UIImage(systemName: "plus.circle", withConfiguration: imageConfig)
+        button.layer.shadowColor = UIColor.gray.cgColor
+        button.layer.shadowOpacity = 0.5
+        button.layer.shadowOffset = CGSize(width: 3, height: 3)
+        button.contentMode = .scaleToFill
+        button.setImage(image, for: .normal)
+        button.addTarget(self, action: #selector(plusButtonAction), for: .touchUpInside)
+        return button
+    }()
+    
+    var fullScreenMinusButton: UIButton! = {
+        let button = UIButton()
+        button.tintColor = .white
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .light)
+        let image = UIImage(systemName: "minus.circle", withConfiguration: imageConfig)
+        button.layer.shadowColor = UIColor.gray.cgColor
+        button.layer.shadowOpacity = 0.5
+        button.layer.shadowOffset = CGSize(width: 3, height: 3)
+        button.contentMode = .scaleToFill
+        button.setImage(image, for: .normal)
+        button.addTarget(self, action: #selector(minusButtonAction), for: .touchUpInside)
+        return button
+    }()
+    
+    let fullScreenControllerBackView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear//UIColor(_colorLiteralRed: 226/255, green: 226/255, blue: 226/255, alpha: 1.0)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isUserInteractionEnabled = true // 터치 이벤트 차단
+        view.layer.cornerRadius = 75
+        view.layer.borderWidth = 3
+        view.layer.shadowColor = UIColor.gray.cgColor
+        view.layer.shadowOpacity = 0.3
+        view.layer.shadowOffset = CGSize(width: 3, height: 3)
+        view.layer.borderColor = UIColor.clear.cgColor//UIColor.white.cgColor
+        return view
+    }()
+    
+    var fullScreenNButton: UIButton! = {
+        let button = UIButton()
+        button.tintColor = .gray
+        button.setTitle("N", for: .normal)
+        button.backgroundColor = .white
+        button.setTitleColor(.gray, for: .highlighted)
+        button.layer.cornerRadius = 25
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
+        button.addTarget(self, action: #selector(NButtonAction), for: .touchUpInside)
+        return button
+    }()
+    
+    var fullScreenSButton: UIButton! = {
+        let button = UIButton()
+        button.tintColor = .gray
+        button.setTitle("S", for: .normal)
+        button.setTitleColor(.gray, for: .highlighted)
+        button.backgroundColor = .white
+        button.layer.cornerRadius = 25
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
+        button.addTarget(self, action: #selector(SButtonAction), for: .touchUpInside)
+        return button
+    }()
+    
+    var fullScreenEButton: UIButton! = {
+        let button = UIButton()
+        button.tintColor = .gray
+        button.setTitle("E", for: .normal)
+        button.setTitleColor(.gray, for: .highlighted)
+        button.backgroundColor = .white
+        button.layer.cornerRadius = 25
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
+        button.addTarget(self, action: #selector(EButtonAction), for: .touchUpInside)
+        return button
+    }()
+    
+    var fullScreenWButton: UIButton! = {
+        let button = UIButton()
+        button.tintColor = .gray
+        button.setTitle("W", for: .normal)
+        button.setTitleColor(.gray, for: .highlighted)
+        button.backgroundColor = .white
+        button.layer.cornerRadius = 25
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
+        button.addTarget(self, action: #selector(WButtonAction), for: .touchUpInside)
+        return button
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -224,6 +399,7 @@ class CamMonitorViewController: UIViewController {
         
         initMonitorView()
         initControllerView()
+        initFullMonitorView()
     }
 
     private func initMonitorView() {
@@ -285,8 +461,7 @@ class CamMonitorViewController: UIViewController {
         
         
         
-        // 5. 큰화면 모니터 image view    full screen
-        // 6. 큰화면 버튼 컨트롤러.                                  -> 보이고 안보이고
+        
         // 7. 장비 리스트
         // 8. 음성 송출 팝업 view
         // 9. 안내방송 팝업 view
@@ -415,7 +590,7 @@ class CamMonitorViewController: UIViewController {
             make.height.width.equalTo(64)
         }
         
-        SButton.snp.makeConstraints { make in
+        WButton.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(10)
             make.centerY.equalToSuperview().multipliedBy(1)
             make.height.width.equalTo(64)
@@ -427,13 +602,157 @@ class CamMonitorViewController: UIViewController {
             make.height.width.equalTo(64)
         }
         
-        WButton.snp.makeConstraints { make in
+        SButton.snp.makeConstraints { make in
             make.bottom.equalToSuperview().offset(-10)
             make.centerX.equalToSuperview().multipliedBy(1)
             make.height.width.equalTo(64)
         }
     }
     
+    func initFullMonitorView() {
+        // 5. 큰화면 모니터 image view    full screen
+        // 6. 큰화면 버튼 컨트롤러.                                  -> 보이고 안보이고
+        
+        monitorFullScreenView.backgroundColor = .black
+        monitorFullScreenButtonsView.backgroundColor = .clear
+        
+        view.addSubview(monitorFullScreenView)
+        monitorFullScreenView.addSubview(monitorFullScreenButtonsView)
+        
+        monitorFullScreenView.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.bottom.leading.trailing.equalToSuperview()
+        }
+        self.view.bringSubviewToFront(monitorFullScreenView)
+        
+        monitorFullScreenButtonsView.snp.makeConstraints { make in
+            make.top.bottom.leading.trailing.equalToSuperview()
+        }
+        
+        let tapFullScreenViewGesture = UITapGestureRecognizer(target: self, action: #selector(didTapMonitorFullScreenView))
+        let tapFullScreenButtonsViewGesture = UITapGestureRecognizer(target: self, action: #selector(didTapMonitorFullScreenButtonsView))
+        monitorFullScreenView.addGestureRecognizer(tapFullScreenViewGesture)
+        monitorFullScreenButtonsView.addGestureRecognizer(tapFullScreenButtonsViewGesture)
+        
+        self.monitorFullScreenButtonsView.addSubview(fullScreenChannelSwitch)
+        self.monitorFullScreenButtonsView.addSubview(fullScreenChannelLabel)
+        self.monitorFullScreenButtonsView.addSubview(fullScreenBackButton)
+        
+        fullScreenBackButton.rotate(angle: 90)
+        fullScreenBackButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-15)
+            make.top.equalToSuperview().offset(15)
+        }
+        
+        fullScreenChannelLabel.rotate(angle: 90)
+        fullScreenChannelLabel.snp.makeConstraints { make in
+            make.top.equalTo(fullScreenBackButton.snp.bottom).offset(15)
+            make.centerX.equalTo(fullScreenBackButton.snp.centerX)
+        }
+        
+        fullScreenChannelSwitch.rotate(angle: 90)
+        fullScreenChannelSwitch.snp.makeConstraints { make in
+            make.centerX.equalTo(fullScreenBackButton.snp.centerX)
+            make.bottom.equalToSuperview()
+            make.height.equalTo(40)
+            make.width.equalTo(80)
+        }
+     
+        
+        self.monitorFullScreenButtonsView.addSubview(fullScreenOnButton)
+        fullScreenOnButton.rotate(angle: 90)
+        fullScreenOnButton.snp.makeConstraints { make in
+            make.centerY.equalTo(fullScreenChannelSwitch.snp.centerY)
+            make.centerX.equalToSuperview().multipliedBy(0.6)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+        
+        self.monitorFullScreenButtonsView.addSubview(fullScreenOffButton)
+        fullScreenOffButton.rotate(angle: 90)
+        fullScreenOffButton.snp.makeConstraints { make in
+            make.centerY.equalTo(fullScreenChannelSwitch.snp.centerY)
+            make.trailing.equalTo(fullScreenOnButton.snp.leading).offset(10)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+        
+        self.monitorFullScreenButtonsView.addSubview(fullScreenPlayButton)
+        fullScreenPlayButton.rotate(angle: 90)
+        fullScreenPlayButton.snp.makeConstraints { make in
+            make.leading.equalTo(fullScreenOnButton.snp.trailing)
+            make.centerY.equalTo(fullScreenChannelSwitch.snp.centerY)
+            make.width.height.equalTo(60)
+        }
+        
+        self.monitorFullScreenButtonsView.addSubview(fullScreenMicButton)
+        fullScreenMicButton.rotate(angle: 90)
+        fullScreenMicButton.snp.makeConstraints { make in
+            make.centerY.equalTo(fullScreenChannelSwitch.snp.centerY)
+            make.leading.equalTo(fullScreenPlayButton.snp.trailing)
+            make.width.height.equalTo(60)
+        }
+        
+        self.monitorFullScreenButtonsView.addSubview(fullScreenPlusButton)
+        fullScreenPlusButton.rotate(angle: 90)
+        fullScreenPlusButton.snp.makeConstraints { make in
+            make.centerX.equalToSuperview().offset(40)
+            make.bottom.equalTo(fullScreenMicButton.snp.top).offset(-20)
+            make.width.height.equalTo(40)
+        }
+        
+        self.monitorFullScreenButtonsView.addSubview(fullScreenMinusButton)
+        fullScreenMinusButton.rotate(angle: 90)
+        fullScreenMinusButton.snp.makeConstraints { make in
+            make.centerY.equalTo(fullScreenPlusButton)
+            make.trailing.equalTo(fullScreenPlusButton.snp.leading).offset(-60)
+            make.width.height.equalTo(40)
+        }
+        
+        self.monitorFullScreenButtonsView.addSubview(fullScreenControllerBackView)
+        fullScreenControllerBackView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(15)
+            make.leading.equalToSuperview().offset(15)
+            make.width.height.equalTo(130)
+        }
+        
+        fullScreenControllerBackView.addSubview(fullScreenNButton)
+        fullScreenControllerBackView.addSubview(fullScreenSButton)
+        fullScreenControllerBackView.addSubview(fullScreenEButton)
+        fullScreenControllerBackView.addSubview(fullScreenWButton)
+        fullScreenNButton.rotate(angle: 90)
+        fullScreenSButton.rotate(angle: 90)
+        fullScreenEButton.rotate(angle: 90)
+        fullScreenWButton.rotate(angle: 90)
+        
+        fullScreenWButton.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.centerX.equalToSuperview().multipliedBy(1)
+            make.height.width.equalTo(50)
+        }
+        
+        fullScreenSButton.snp.makeConstraints { make in
+            make.leading.equalToSuperview()
+            make.centerY.equalToSuperview().multipliedBy(1)
+            make.height.width.equalTo(50)
+        }
+        
+        fullScreenNButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview()
+            make.centerY.equalToSuperview().multipliedBy(1)
+            make.height.width.equalTo(50)
+        }
+        
+        fullScreenEButton.snp.makeConstraints { make in
+            make.bottom.equalToSuperview()
+            make.centerX.equalToSuperview().multipliedBy(1)
+            make.height.width.equalTo(50)
+        }
+        
+        setMonitorFullScreenButtonsViewFlag()
+        monitorFullScreenView.isHidden = true
+        
+    }
     
     
     func setMonitorButtonsViewFlag() {
@@ -444,23 +763,43 @@ class CamMonitorViewController: UIViewController {
         }
     }
     
+    func setMonitorFullScreenButtonsViewFlag() {
+        if (monitorFullScreenButtnFlag) {
+            monitorFullScreenButtonsView.isHidden = false
+        } else {
+            monitorFullScreenButtonsView.isHidden = true
+        }
+    }
+    
     
     // MARK: - Actions
     @objc func channelSwitchAction(sender: CustomSwitch) {
         if sender.isOn {
             print("select channel2ButtonAction")
             self.channelLabel.text = "Ch 2"
+            self.fullScreenChannelLabel.text = "Ch 2"
         } else {
             print("select channel1ButtonAction")
             self.channelLabel.text = "Ch 1"
+            self.fullScreenChannelLabel.text = "Ch 1"
         }
     }
     
+    @objc func fullScreenChannelSwitchAction(sender: CustomSwitch) {
+        if sender.isOn {
+            print("select fullScreenChannelSwitchAction")
+            self.fullScreenChannelLabel.text = "Ch 2"
+        } else {
+            print("select fullScreenChannelSwitchAction")
+            self.fullScreenChannelLabel.text = "Ch 1"
+        }
+    }
     
     @objc func fullScreenButtonAction(sender: UIButton) {
         print("select fullScreenButtonAction")
-        
+        monitorFullScreenView.isHidden = false
     }
+    
     
     @objc func didTapMonitorButtonsView(sender: UITapGestureRecognizer) {
         // 터치 위치가 channelSwitch 내부인지 확인
@@ -474,8 +813,10 @@ class CamMonitorViewController: UIViewController {
         } else {
             if self.channelSwitch.isOn {
                 self.channelSwitch.isOn = false
+                self.fullScreenChannelSwitch.isOn = false
             } else {
                 self.channelSwitch.isOn = true
+                self.fullScreenChannelSwitch.isOn = true
             }
             
         }
@@ -488,13 +829,40 @@ class CamMonitorViewController: UIViewController {
         setMonitorButtonsViewFlag()
     }
     
-    @objc func onButtonButtonAction(sender: UIButton) {
-        print("select onButtonButtonAction")
+    @objc func didTapMonitorFullScreenButtonsView(sender: UITapGestureRecognizer) {
+        // 터치 위치가 channelSwitch 내부인지 확인
+        let touchLocation = sender.location(in: monitorFullScreenButtonsView)
+        
+        // 터치가 channelSwitch의 영역 안에 있지 않으면 버튼을 숨기기
+        if !fullScreenChannelSwitch.frame.contains(touchLocation) {
+            print("select didTapMonitorButtonsView")
+            monitorFullScreenButtnFlag = false
+            setMonitorFullScreenButtonsViewFlag()
+        } else {
+            if self.fullScreenChannelSwitch.isOn {
+                self.channelSwitch.isOn = false
+                self.fullScreenChannelSwitch.isOn = false
+            } else {
+                self.channelSwitch.isOn = true
+                self.fullScreenChannelSwitch.isOn = true
+            }
+            
+        }
+    }
+    
+    @objc func didTapMonitorFullScreenView() {
+        print("select didTapMonitorFullScreenView")
+        monitorFullScreenButtnFlag = true
+        setMonitorFullScreenButtonsViewFlag()
+    }
+    
+    @objc func onButtonAction(sender: UIButton) {
+        print("select onButtonAction")
         
     }
     
-    @objc func offButtonButtonAction(sender: UIButton) {
-        print("select offButtonButtonAction")
+    @objc func offButtonAction(sender: UIButton) {
+        print("select offButtonAction")
         
     }
     
@@ -525,6 +893,22 @@ class CamMonitorViewController: UIViewController {
     
     @objc func WButtonAction(sender: UIButton) {
         print("select WButtonAction")
+        
+    }
+    
+    @objc func fullScreenBackButtonTapped(sender: UIButton) {
+        print("fullScreenBackButtonTapped")
+        
+        monitorFullScreenView.isHidden = true
+    }
+    
+    @objc func plusButtonAction(sender: UIButton) {
+        print("select plusButtonAction")
+        
+    }
+    
+    @objc func minusButtonAction(sender: UIButton) {
+        print("select minusButtonAction")
         
     }
 }
