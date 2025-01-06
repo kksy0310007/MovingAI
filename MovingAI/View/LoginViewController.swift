@@ -31,11 +31,14 @@ class LoginViewController: UIViewController {
 //    var testId = "YS-HDBD"
 //    var testPW = "123qwe"
     
-    var testId = "YS-WJSC"
-    var testPW = "123qwe"
-    
-//    var testId = "hdjs00"
+//    var testId = "YS-WJSC"
 //    var testPW = "123qwe"
+    
+//    var testId = "YS-DWKJ"
+//    var testPW = "123qwe"
+    
+    var testId = "hdjs00"
+    var testPW = "123qwe"
     
 //    var testId = "admin_ys"
 //    var testPW = "12345678a"
@@ -399,3 +402,4 @@ class LoginViewController: UIViewController {
         
     }
 }
+

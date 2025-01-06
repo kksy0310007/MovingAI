@@ -7,16 +7,36 @@
 
 import UIKit
 import SnapKit
+import SwiftyToaster
+import Starscream
+import Alamofire
 
 class CamMonitorViewController: UIViewController {
 
+    let ZOOM_IN_VALUE: CGFloat = 1.5
+    let ZOOM_OUT_VALUE: CGFloat = 0.65
+    let MAX_SCALE: CGFloat = 3.3
+    let MIN_SCALE: CGFloat = 1
+    
+    
+    var titleString: String? = ""
+    let nxCamData = NxCamMethods.shared
+    var selectedDeviceData: NxCamDeviceInfo? = nil
+    
     // 버튼 보임/가림 처리
     var monitorButtnFlag = true
     var monitorFullScreenButtnFlag = true
     
+    var camChannel = "1"
+    
     // 모니터 뷰
     var monitorView = UIView()
+    var monitorImageView = UIImageView()
     var monitorButtonsView = UIView()
+    
+    // WebSocket 인스턴스
+    private var socket: WebSocket?
+    
     
     // 모니터 뷰 버튼
     let channelSwitch: CustomSwitch = {
@@ -219,6 +239,7 @@ class CamMonitorViewController: UIViewController {
     
     // fullScreen
     var monitorFullScreenView = UIView()
+    var monitorFullScreenImageView = UIImageView()
     var monitorFullScreenButtonsView = UIView()
     
     let fullScreenChannelSwitch: CustomSwitch = {
@@ -307,7 +328,7 @@ class CamMonitorViewController: UIViewController {
         button.layer.shadowOffset = CGSize(width: 3, height: 3)
         button.contentMode = .scaleToFill
         button.setImage(image, for: .normal)
-        button.addTarget(self, action: #selector(plusButtonAction), for: .touchUpInside)
+        button.addTarget(self, action: #selector(fullScreenPlusButtonAction), for: .touchUpInside)
         return button
     }()
     
@@ -321,7 +342,7 @@ class CamMonitorViewController: UIViewController {
         button.layer.shadowOffset = CGSize(width: 3, height: 3)
         button.contentMode = .scaleToFill
         button.setImage(image, for: .normal)
-        button.addTarget(self, action: #selector(minusButtonAction), for: .touchUpInside)
+        button.addTarget(self, action: #selector(fullScreenMinusButtonAction), for: .touchUpInside)
         return button
     }()
     
@@ -391,15 +412,26 @@ class CamMonitorViewController: UIViewController {
         return button
     }()
     
+    deinit {
+      socket?.disconnect()
+      socket?.delegate = nil
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // 상단 타이틀 바
-        addNavigationBar(titleString: "실시간 영상",isBackButtonVisible: true)
+        if titleString == nil || titleString == "" {
+            titleString = "실시간 영상"
+        }
+        addNavigationBar(titleString: titleString!,isBackButtonVisible: true)
         
         initMonitorView()
         initControllerView()
         initFullMonitorView()
+        
+        
+        checkSelectedDeviceData()
     }
 
     private func initMonitorView() {
@@ -407,10 +439,17 @@ class CamMonitorViewController: UIViewController {
         // 1. 작은화면 모니터 image view
         self.view.addSubview(monitorView)
         monitorView.backgroundColor = .black
+        
         monitorView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview()
             make.height.equalToSuperview().multipliedBy(0.4)
+        }
+        
+        monitorView.addSubview(monitorImageView)
+        monitorImageView.transform = CGAffineTransform(scaleX: MIN_SCALE, y: MIN_SCALE)
+        monitorImageView.snp.makeConstraints { make in
+            make.top.bottom.leading.trailing.equalToSuperview()
         }
         
         
@@ -618,13 +657,22 @@ class CamMonitorViewController: UIViewController {
         
         view.addSubview(monitorFullScreenView)
         monitorFullScreenView.addSubview(monitorFullScreenButtonsView)
-        
         monitorFullScreenView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.bottom.leading.trailing.equalToSuperview()
         }
         self.view.bringSubviewToFront(monitorFullScreenView)
         
+        
+        monitorFullScreenView.addSubview(monitorFullScreenImageView)
+        monitorFullScreenImageView.contentMode = .scaleAspectFill
+        monitorFullScreenImageView.transform = CGAffineTransform(scaleX: MIN_SCALE, y: MIN_SCALE)
+        monitorFullScreenImageView.rotate(angle: 90)
+        monitorFullScreenImageView.snp.makeConstraints { make in
+            make.top.bottom.leading.trailing.equalToSuperview()
+        }
+        
+        monitorFullScreenView.addSubview(monitorFullScreenButtonsView)
         monitorFullScreenButtonsView.snp.makeConstraints { make in
             make.top.bottom.leading.trailing.equalToSuperview()
         }
@@ -640,13 +688,13 @@ class CamMonitorViewController: UIViewController {
         
         fullScreenBackButton.rotate(angle: 90)
         fullScreenBackButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().offset(-15)
-            make.top.equalToSuperview().offset(15)
+            make.trailing.equalToSuperview().offset(-30)
+            make.top.equalToSuperview()
         }
         
         fullScreenChannelLabel.rotate(angle: 90)
         fullScreenChannelLabel.snp.makeConstraints { make in
-            make.top.equalTo(fullScreenBackButton.snp.bottom).offset(15)
+            make.top.equalTo(fullScreenBackButton.snp.bottom).offset(25)
             make.centerX.equalTo(fullScreenBackButton.snp.centerX)
         }
         
@@ -774,33 +822,48 @@ class CamMonitorViewController: UIViewController {
     
     // MARK: - Actions
     @objc func channelSwitchAction(sender: CustomSwitch) {
+//        sendClose()
         if sender.isOn {
             print("select channel2ButtonAction")
             self.channelLabel.text = "Ch 2"
             self.fullScreenChannelLabel.text = "Ch 2"
+            self.camChannel  = "2"
         } else {
             print("select channel1ButtonAction")
             self.channelLabel.text = "Ch 1"
             self.fullScreenChannelLabel.text = "Ch 1"
+            self.camChannel  = "1"
         }
+        connectVideoSocket(channel: camChannel)
     }
     
     @objc func fullScreenChannelSwitchAction(sender: CustomSwitch) {
         if sender.isOn {
             print("select fullScreenChannelSwitchAction")
             self.fullScreenChannelLabel.text = "Ch 2"
+            self.camChannel  = "2"
         } else {
             print("select fullScreenChannelSwitchAction")
             self.fullScreenChannelLabel.text = "Ch 1"
+            self.camChannel  = "1"
         }
     }
     
     @objc func fullScreenButtonAction(sender: UIButton) {
         print("select fullScreenButtonAction")
         monitorFullScreenView.isHidden = false
+        self.navigationController?.navigationBar.isHidden = true
+        // 탭바 숨김
+        // Status Bar 숨기기
+//        let keyWindow = UIApplication.shared.windows.first { $0.isKeyWindow }
+//        keyWindow?.windowScene?.statusBarManager?.isStatusBarHidden = true
+        
+        tabBarController?.tabBar.isHidden = true
+                
+        // 상태바 스타일 설정을 위한 메서드
+        setNeedsStatusBarAppearanceUpdate()
     }
-    
-    
+
     @objc func didTapMonitorButtonsView(sender: UITapGestureRecognizer) {
         // 터치 위치가 channelSwitch 내부인지 확인
         let touchLocation = sender.location(in: monitorButtonsView)
@@ -876,39 +939,230 @@ class CamMonitorViewController: UIViewController {
         
     }
     
+    // 위
     @objc func NButtonAction(sender: UIButton) {
         print("select NButtonAction")
-        
+        camRotateControl(session: selectedDeviceData!.sessionId, direction: 1)
     }
     
+    // 오른
     @objc func EButtonAction(sender: UIButton) {
         print("select EButtonAction")
-        
+        camRotateControl(session: selectedDeviceData!.sessionId, direction: 3)
     }
     
+    // 아래
     @objc func SButtonAction(sender: UIButton) {
         print("select SButtonAction")
-        
+        camRotateControl(session: selectedDeviceData!.sessionId, direction: 2)
     }
     
+    // 왼
     @objc func WButtonAction(sender: UIButton) {
         print("select WButtonAction")
-        
+        camRotateControl(session: selectedDeviceData!.sessionId, direction: 4)
     }
     
     @objc func fullScreenBackButtonTapped(sender: UIButton) {
         print("fullScreenBackButtonTapped")
-        
+        self.navigationController?.navigationBar.isHidden = false
         monitorFullScreenView.isHidden = true
+        // Tab Bar 보이기
+        tabBarController?.tabBar.isHidden = false
+                
+        setNeedsStatusBarAppearanceUpdate()
     }
     
     @objc func plusButtonAction(sender: UIButton) {
         print("select plusButtonAction")
-        
+        imageViewPlayerZoomIn()
     }
     
     @objc func minusButtonAction(sender: UIButton) {
         print("select minusButtonAction")
+        imageViewPlayerZoomOut()
+    }
+    
+    @objc func fullScreenPlusButtonAction(sender: UIButton) {
+        print("select fullScreenPlusButtonAction")
+//        imageViewPlayerZoomIn()
+       
+    }
+    
+    @objc func fullScreenMinusButtonAction(sender: UIButton) {
+        print("select fullScreenMinusButtonAction")
+//        imageViewPlayerZoomOut()
+        
+    }
+    
+    
+    func checkSelectedDeviceData() {
+        if let selectedData = nxCamData.selectedDeviceInfo {
+            print("selected Data sessionID = \(selectedData.sessionId)")
+            selectedDeviceData = selectedData
+            
+            connectVideoSocket(channel: camChannel)
+        } else {
+            Toaster.shared.makeToast("장비가 선택되지 않았습니다.", .middle)
+            navigationController?.popViewController(animated: true)
+        }
+    }
+    
+    func processRtpMic() {
+        
+    }
+    
+    func processPresetVoice() {
+        
+    }
+    
+    func patrolOn() {
+        
+    }
+    
+    func patrolOff() {
+        
+    }
+    
+    // PTZ 컨트롤 버튼 설정
+    func camRotateControl(session: String, direction: Int) {
+        
+        // 회전 방향
+        // ==== 렌즈 ====
+        // 1: 위
+        // 2: 아래
+        // ==== 몸체 =====
+        // 3: 오른쪽
+        // 4: 왼쪽
+        
+        // 로딩 시작
+        LoadingIndicator.shared.show()
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "test",
+            "Accept": "application/json"
+        ]
+        
+        var url = "control/ptz/\(session)/\(direction)"
+        
+        AF.request(
+            baseApiUrl + url,
+            method: .get,
+            headers: headers
+        ).validate(statusCode: 200..<300)
+            .response { response in
+                print("camRotateControl ==== > session : \(session), direction : \(direction) , response : \(response)")
+            }
+    }
+    
+    func connectVideoSocket(channel: String) {
+        var socketUrl = "wss://platform.moving-ai.com/mjpeg?serial="
+        if let deviceSerial = selectedDeviceData?.deviceSerial {
+            socketUrl += deviceSerial
+        }
+        socketUrl += "&channel="
+        socketUrl += "\(camChannel)"
+        print("!!!!!!!! socketUrl = \(socketUrl)")
+        LoadingIndicator.shared.show()
+        let url = URL(string: socketUrl)!
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 5
+        socket = WebSocket(request: request)
+        socket?.delegate = self
+        socket?.connect()
+        
+    }
+    
+    private func sendClose() {
+        do {
+            // JSON 객체 생성
+            var jsonObject: [String: Any] = [:]
+            jsonObject["type"] = "close"
+            
+            // JSON 문자열로 변환
+            let jsonData = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                // WebSocket으로 메시지 전송
+                socket?.write(string: jsonString)
+            }
+            
+            // 메인 스레드에서 UI 업데이트
+            DispatchQueue.main.async {
+                LoadingIndicator.shared.hide()
+            }
+        } catch {
+            print("Failed to create JSON object: \(error.localizedDescription)")
+        }
+    }
+    
+    /** 이미지 뷰 확대 */
+        func imageViewPlayerZoomIn() {
+            let currentScaleX = monitorView.transform.a
+            let currentScaleY = monitorView.transform.d
+
+            if currentScaleX >= MIN_SCALE {
+                let newScaleX = min(currentScaleX * ZOOM_IN_VALUE, MAX_SCALE)
+                let newScaleY = min(currentScaleY * ZOOM_IN_VALUE, MAX_SCALE)
+
+                monitorView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleY)
+            }
+        }
+
+        /** 이미지 뷰 축소 */
+        func imageViewPlayerZoomOut() {
+            let currentScaleX = monitorView.transform.a
+            let currentScaleY = monitorView.transform.d
+
+            if currentScaleX > MIN_SCALE {
+                let newScaleX = max(currentScaleX * ZOOM_OUT_VALUE, MIN_SCALE)
+                let newScaleY = max(currentScaleY * ZOOM_OUT_VALUE, MIN_SCALE)
+
+                monitorView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleY)
+            }
+        }
+}
+
+extension CamMonitorViewController: WebSocketDelegate {
+    func didReceive(event: Starscream.WebSocketEvent, client: any Starscream.WebSocketClient) {
+        switch event {
+        case .connected(let headers):
+          
+          print("websocket is connected: \(headers)")
+        case .disconnected(let reason, let code):
+          print("websocket is disconnected: \(reason) with code: \(code)")
+        case .text(let text):
+          print("received text: \(text)")
+        case .binary(let data):
+          print("Received data: \(data.count)")
+            
+            DispatchQueue.main.async {
+                // 이미지 데이터 처리
+                if let image = UIImage(data: data) {
+                    self.monitorImageView.image = image
+                    self.monitorFullScreenImageView.image = image
+                    
+                } else {
+                    print("Failed to decode image data")
+                }
+                LoadingIndicator.shared.hide()
+            }
+            
+        case .ping(_):
+          break
+        case .pong(_):
+          break
+        case .viabilityChanged(_):
+          break
+        case .reconnectSuggested(_):
+          break
+        case .cancelled:
+          print("websocket is canclled")
+        case .error(let error):
+          print("websocket is error = \(error!)")
+        case .peerClosed:
+            print("websocket is peerClosed")
+        }
+        
         
     }
 }

@@ -103,8 +103,15 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("select \(indexPath.row)")
         
+        let nxCamData = NxCamMethods.shared
+        
+        let selected = nxCamData.getDeviceInfoList()[indexPath.row]
+        print("selected =  \(selected)")
+        nxCamData.setSelectedDeviceInfo(selected)
+        
+    
         guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else { return }
-
+        camMonitorVC.titleString = selected.deviceSerial
         self.navigationController?.pushViewController(camMonitorVC, animated: true)
     }
 
