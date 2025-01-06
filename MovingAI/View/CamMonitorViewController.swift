@@ -36,8 +36,7 @@ class CamMonitorViewController: UIViewController {
     
     // WebSocket 인스턴스
     private var socket: WebSocket?
-    
-    
+        
     // 모니터 뷰 버튼
     let channelSwitch: CustomSwitch = {
         let view = CustomSwitch()
@@ -853,16 +852,16 @@ class CamMonitorViewController: UIViewController {
         print("select fullScreenButtonAction")
         monitorFullScreenView.isHidden = false
         self.navigationController?.navigationBar.isHidden = true
-        // 탭바 숨김
         // Status Bar 숨기기
-//        let keyWindow = UIApplication.shared.windows.first { $0.isKeyWindow }
-//        keyWindow?.windowScene?.statusBarManager?.isStatusBarHidden = true
         
+        // 탭바 숨김
         tabBarController?.tabBar.isHidden = true
                 
         // 상태바 스타일 설정을 위한 메서드
         setNeedsStatusBarAppearanceUpdate()
     }
+    
+    
 
     @objc func didTapMonitorButtonsView(sender: UITapGestureRecognizer) {
         // 터치 위치가 channelSwitch 내부인지 확인
@@ -921,12 +920,12 @@ class CamMonitorViewController: UIViewController {
     
     @objc func onButtonAction(sender: UIButton) {
         print("select onButtonAction")
-        
+        patrolOn()
     }
     
     @objc func offButtonAction(sender: UIButton) {
         print("select offButtonAction")
-        
+        patrolOff()
     }
     
     @objc func didTapMicView() {
@@ -986,13 +985,16 @@ class CamMonitorViewController: UIViewController {
     @objc func fullScreenPlusButtonAction(sender: UIButton) {
         print("select fullScreenPlusButtonAction")
 //        imageViewPlayerZoomIn()
+
+
        
     }
     
     @objc func fullScreenMinusButtonAction(sender: UIButton) {
         print("select fullScreenMinusButtonAction")
 //        imageViewPlayerZoomOut()
-        
+
+
     }
     
     
@@ -1017,11 +1019,74 @@ class CamMonitorViewController: UIViewController {
     }
     
     func patrolOn() {
+        LoadingIndicator.shared.show()
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "test",
+            "Accept": "application/json"
+        ]
+        
+        if let sessionId = selectedDeviceData?.sessionId {
+            let url = "nxcamPatrol/\(sessionId)/true"
+            
+            AF.request(
+                baseDataApiUrl + url,
+                method: .put,
+                headers: headers
+            ).validate(statusCode: 200..<300)
+                .response { response in
+                    switch response.result {
+                        case .success(let data):
+                            print("camRotateControl ==== > data : \(data)")
+                            Toaster.shared.makeToast("패트롤 ON", .short)
+                            
+                        case .failure(let error):
+                            print("camRotateControl ==== > error : \(error)")
+                    }
+                    
+            }
+            
+        } else {
+            print("sessionId가 nil입니다.")
+        }
+        
+        
         
     }
     
     func patrolOff() {
         
+        LoadingIndicator.shared.show()
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "test",
+            "Accept": "application/json"
+        ]
+        
+        if let sessionId = selectedDeviceData?.sessionId {
+            let url = "nxcamPatrol/\(sessionId)/false"
+            
+            AF.request(
+                baseDataApiUrl + url,
+                method: .put,
+                headers: headers
+            ).validate(statusCode: 200..<300)
+                .response { response in
+                    
+                    switch response.result {
+                        case .success(let data):
+                        print("camRotateControl ==== > data : \(data)")
+                            Toaster.shared.makeToast("패트롤 OFF", .middle)
+                            
+                        case .failure(let error):
+                            print("camRotateControl ==== > error : \(error)")
+                    }
+            }
+        } else {
+            print("sessionId가 nil입니다.")
+        }
+        
+
     }
     
     // PTZ 컨트롤 버튼 설정
