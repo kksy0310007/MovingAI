@@ -25,23 +25,33 @@ class LoginViewController: UIViewController {
     var id: String = ""
     var pw: String = ""
     
+    // 과천 G town
 //    var testId = "dwgc00"
 //    var testPW = "123qwe"
 
+    // 현대 불당
 //    var testId = "YS-HDBD"
 //    var testPW = "123qwe"
     
+    // GS 상도
+//    var testId = "YS-GSSD"
+//    var testPW = "123qwe"
+    
+    // 웅진 서초
 //    var testId = "YS-WJSC"
 //    var testPW = "123qwe"
     
+    // 대우 금정
 //    var testId = "YS-DWKJ"
 //    var testPW = "123qwe"
     
-    var testId = "hdjs00"
-    var testPW = "123qwe"
+    // 현대 잠실 주경기장
+//    var testId = "hdjs00"
+//    var testPW = "123qwe"
     
-//    var testId = "admin_ys"
-//    var testPW = "12345678a"
+    // 영신
+    var testId = "admin_ys"
+    var testPW = "12345678a"
     
     
     let userAccount = UserAccountMethods.shared

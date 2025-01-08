@@ -34,9 +34,15 @@ class CamMonitorViewController: UIViewController {
     var monitorImageView = UIImageView()
     var monitorButtonsView = UIView()
     
+    private var isFullScreen: Bool = false
+    
     // WebSocket 인스턴스
     private var socket: WebSocket?
         
+    var presetServerDataList: [PresetManageData] = []
+    var devicePresetList: [PresetManageData] = []
+    var presetDataList: [PresetData] = []
+    
     // 모니터 뷰 버튼
     let channelSwitch: CustomSwitch = {
         let view = CustomSwitch()
@@ -431,6 +437,8 @@ class CamMonitorViewController: UIViewController {
         
         
         checkSelectedDeviceData()
+        initPresetVoiceData()
+        
     }
 
     private func initMonitorView() {
@@ -798,7 +806,7 @@ class CamMonitorViewController: UIViewController {
         
         setMonitorFullScreenButtonsViewFlag()
         monitorFullScreenView.isHidden = true
-        
+        isFullScreen = false
     }
     
     
@@ -859,6 +867,7 @@ class CamMonitorViewController: UIViewController {
                 
         // 상태바 스타일 설정을 위한 메서드
         setNeedsStatusBarAppearanceUpdate()
+        isFullScreen = true
     }
     
     
@@ -935,8 +944,14 @@ class CamMonitorViewController: UIViewController {
     
     @objc func didTapPlayView() {
         print("select didTapPlayView")
-        
+
+        let popupVC = PopupViewController(items: self.presetDataList)
+        popupVC.delegate = self
+        popupVC.modalPresentationStyle = .overFullScreen
+        popupVC.modalTransitionStyle = .crossDissolve
+        present(popupVC, animated: true)
     }
+    
     
     // 위
     @objc func NButtonAction(sender: UIButton) {
@@ -970,6 +985,7 @@ class CamMonitorViewController: UIViewController {
         tabBarController?.tabBar.isHidden = false
                 
         setNeedsStatusBarAppearanceUpdate()
+        isFullScreen = false
     }
     
     @objc func plusButtonAction(sender: UIButton) {
@@ -984,17 +1000,12 @@ class CamMonitorViewController: UIViewController {
     
     @objc func fullScreenPlusButtonAction(sender: UIButton) {
         print("select fullScreenPlusButtonAction")
-//        imageViewPlayerZoomIn()
-
-
-       
+        imageViewPlayerZoomIn()
     }
     
     @objc func fullScreenMinusButtonAction(sender: UIButton) {
         print("select fullScreenMinusButtonAction")
-//        imageViewPlayerZoomOut()
-
-
+        imageViewPlayerZoomOut()
     }
     
     
@@ -1101,7 +1112,7 @@ class CamMonitorViewController: UIViewController {
         // 4: 왼쪽
         
         // 로딩 시작
-        LoadingIndicator.shared.show()
+//        LoadingIndicator.shared.show()
         
         let headers: HTTPHeaders = [
             "Authorization": "test",
@@ -1162,29 +1173,135 @@ class CamMonitorViewController: UIViewController {
     
     /** 이미지 뷰 확대 */
         func imageViewPlayerZoomIn() {
-            let currentScaleX = monitorView.transform.a
-            let currentScaleY = monitorView.transform.d
-
+            let targetView = isFullScreen ? monitorFullScreenImageView : monitorImageView
+            let currentScaleX = targetView.transform.a
+            
             if currentScaleX >= MIN_SCALE {
                 let newScaleX = min(currentScaleX * ZOOM_IN_VALUE, MAX_SCALE)
-                let newScaleY = min(currentScaleY * ZOOM_IN_VALUE, MAX_SCALE)
-
-                monitorView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleY)
+                targetView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleX)
             }
         }
 
         /** 이미지 뷰 축소 */
         func imageViewPlayerZoomOut() {
-            let currentScaleX = monitorView.transform.a
-            let currentScaleY = monitorView.transform.d
+            let targetView = isFullScreen ? monitorFullScreenImageView : monitorImageView
+            let currentScaleX = targetView.transform.a
 
             if currentScaleX > MIN_SCALE {
                 let newScaleX = max(currentScaleX * ZOOM_OUT_VALUE, MIN_SCALE)
-                let newScaleY = max(currentScaleY * ZOOM_OUT_VALUE, MIN_SCALE)
 
-                monitorView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleY)
+                targetView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleX)
             }
         }
+    
+    
+    // 안내방송 리스트 통신으로 가져옴
+    private func initPresetVoiceData() {
+        // 완성된 URL
+        let url = "\(baseDataApiUrl)/preset"
+                
+        // HTTP 헤더
+        let headers: HTTPHeaders = [
+            "Authorization": "test",
+            "Accept": "application/json"
+        ]
+        
+        AF.request(
+            url,
+            method: .get,
+            headers: headers
+        ).validate(statusCode: 200..<300)
+            .responseDecodable(of: [PresetManageData].self) { response in
+                switch response.result {
+                
+                case .success(let value):
+                    print("initPresetVoiceData 성공하였습니다 ")
+                    self.presetServerDataList = value
+                    
+                    var targetData: [String]?
+                    
+                    // 웹 리스트 COMPARE 장비 아이디
+                    for data in self.presetServerDataList ?? [] {
+                            targetData = data.applyNxCam.split(separator: "|").map { String($0) }
+                            
+                            if let targetData = targetData {
+                                for deviceId in targetData {
+                                    if let deviceSession = Int(NxCamMethods.shared.selectedDeviceInfo?.sessionId ?? ""),
+                                       let presetDeviceSession = Int(deviceId) {
+                                        // 켜진 장비 세션값 vs 프리셋이 적용된 장비 세션값
+                                        if deviceSession == presetDeviceSession {
+                                            self.devicePresetList.append(data)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    
+                    print("initPresetVoiceData 성공하였습니다 devicePresetList :: \(self.devicePresetList)")
+                    self.getPresetVoiceData()
+                    
+                case .failure(let error):
+                    print("initPresetVoiceData - 실패하였습니다 :: \(error)" )
+                    
+                }
+        }
+        
+    }
+    
+    // 장비에 있는 프리셋 폴더 파일 리스트
+    private func getPresetVoiceData() {
+        // 완성된 URL
+        let url = "\(baseApiUrl)manage/fileList"
+                
+        // HTTP 헤더
+        let headers: HTTPHeaders = [
+            "Authorization": "test",
+            "Accept": "application/json"
+        ]
+        
+        let parameters: Parameters = [
+               "filename": "",
+               "path": "PRESET",
+               "sessionId": selectedDeviceData?.sessionId ?? ""
+        ]
+        
+        AF.request(
+            url,
+            method: .get,
+            parameters: parameters,
+            encoding: URLEncoding.queryString,
+            headers: headers
+        ).validate(statusCode: 200..<300)
+            .responseDecodable(of: [PresetData].self) { response in
+                switch response.result {
+                case .success(let value):
+                    print("getPresetVoiceData 성공하였습니다")
+                    
+                    if !value.isEmpty {
+                        // 장비 파일 리스트와 매칭 완료된 프리셋 리스트 필터링
+                        for presetFile in value {
+                            for presetModel in self.devicePresetList {
+                                if presetFile.fileName == presetModel.oriFilename {
+                                    self.presetDataList.append(presetFile)
+                                }
+                            }
+                        }
+                        print("getPresetVoiceData presetDataList: \(self.presetDataList)")
+                        
+                    } else {
+                        // 값 업음
+                        Toaster.shared.makeToast("안내방송이 존재하지 않습니다.")
+                    }
+                    
+                    
+                    
+                case .failure(let error):
+                    print("getPresetVoiceData - 실패하였습니다 :: \(error)" )
+                    
+                }
+        }
+        
+    }
 }
 
 extension CamMonitorViewController: WebSocketDelegate {
@@ -1229,5 +1346,52 @@ extension CamMonitorViewController: WebSocketDelegate {
         }
         
         
+    }
+}
+extension CamMonitorViewController: PopupDelegate {
+    func popupDidSelectItem(index: Int) {
+        print("선택된 아이템 인덱스: \(index)")
+        
+        playPresetVoice(position: index)
+    }
+    
+    // preset 재생
+    private func playPresetVoice(position: Int) {
+        if (presetDataList[position].fileSize == nil) {
+            print("Preset 파일 에러 ")
+            return
+        }
+        
+        if let fileName = presetDataList[position].fileName {
+            let fileNameParts = fileName.split(separator: ".")
+            if let firstPart = fileNameParts.first {
+                let targetURL = "control/preset/\(NxCamMethods.shared.selectedDeviceInfo?.sessionId ?? "")/\(firstPart)"
+                print("Target URL: \(targetURL)")
+                
+                // HTTP 헤더
+                let headers: HTTPHeaders = [
+                    "Authorization": "test",
+                    "Accept": "application/json"
+                ]
+                
+                
+                AF.request(
+                    baseApiUrl + targetURL,
+                    method: .get,
+                    headers: headers
+                ).validate(statusCode: 200..<300)
+                    .response { response in
+                        switch response.result {
+                            case .success(let data):
+                                print("playPresetVoice ==== > data : \(data)")
+                                
+                            case .failure(let error):
+                                print("playPresetVoice ==== > error : \(error)")
+                        }
+                        
+                    }
+
+            }
+        }
     }
 }

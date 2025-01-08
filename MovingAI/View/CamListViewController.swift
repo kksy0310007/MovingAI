@@ -111,7 +111,7 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         
     
         guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else { return }
-        camMonitorVC.titleString = selected.deviceSerial
+        camMonitorVC.titleString = selected.deviceName
         self.navigationController?.pushViewController(camMonitorVC, animated: true)
     }
 
