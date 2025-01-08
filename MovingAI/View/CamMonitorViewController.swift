@@ -1383,8 +1383,8 @@ extension CamMonitorViewController: PopupDelegate {
                     .response { response in
                         switch response.result {
                             case .success(let data):
-                                print("playPresetVoice ==== > data : \(data)")
-                                
+                                print("playPresetVoice ==== > success data : \(data)")
+                                self.broadcastHistoryCreate(apiType: "VOICEMSG", eventKind: "")
                             case .failure(let error):
                                 print("playPresetVoice ==== > error : \(error)")
                         }
@@ -1393,5 +1393,50 @@ extension CamMonitorViewController: PopupDelegate {
 
             }
         }
+    }
+    
+    // 방송 전파이력 생성
+    private func broadcastHistoryCreate(apiType: String, eventKind: String) {
+        
+//        let targetHistory = BroadcastCreateBodyDataModel(id: Int(selectedDeviceData?.sessionId ?? "0"), apiType: apiType ?? "", eventKind: eventKind ?? "", userId: UserAccountMethods.shared.movingAIUserAccount?.userId ?? "")
+        
+        let url = baseDataApiUrl + "broadcastHistory/create"
+        
+        // HTTP 헤더
+        let headers: HTTPHeaders = [
+            "Authorization": "test",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        ]
+        
+        // 요청 파라미터
+//        let parameters: Parameters = [
+//            "BroadcastCreateBodyDataModel": targetHistory
+//        ]
+        
+        let parameters: [String: Any] = [
+            "id": Int(selectedDeviceData?.sessionId ?? "0"),
+            "apiType": apiType,
+            "eventKind": eventKind,
+            "userId": UserAccountMethods.shared.movingAIUserAccount?.userId ?? ""
+        ]
+
+        AF.request(
+            url,
+            method: .post,
+            parameters: parameters,
+            encoding: JSONEncoding.default,
+            headers: headers
+        ).validate(statusCode: 200..<300)
+            .response { response in
+                switch response.result {
+                    case .success(let data):
+                        print("broadcastHistoryCreate ==== > success data : \(data)")
+
+                    case .failure(let error):
+                        print("broadcastHistoryCreate ==== > error : \(error)")
+                }
+                
+            }
     }
 }
