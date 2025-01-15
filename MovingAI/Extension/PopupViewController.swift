@@ -14,8 +14,6 @@ protocol PopupDelegate: AnyObject {
 
 class PopupViewController: UIViewController {
 
-    // 콜백을 위한 클로저 선언
-    var itemSelectedCallback: ((Int) -> Void)?
     private let items: [PresetData]
     
     // 델리게이트 선언

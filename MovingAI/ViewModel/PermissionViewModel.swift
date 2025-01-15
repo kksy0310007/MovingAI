@@ -60,20 +60,23 @@ class PermissionViewModel: ObservableObject {
     // 오디오 권한 요청
     func requestAccessAudio() {
         AVCaptureDevice.requestAccess(for: .audio) { accessGranted in
-            self.requestMicrophonePermission()
+            self.requestMicrophonePermission { granted in
+                self.requestAccessLocation()
+            }
         }
     }
     
     // 마이크 퀀한 요청
-    func requestMicrophonePermission() {
+    func requestMicrophonePermission(completion: @escaping (Bool) -> Void) {
         AVAudioSession.sharedInstance().requestRecordPermission { granted in
             DispatchQueue.main.async {
                 if granted {
                     // 허용.
-                    self.requestAccessLocation()
+                    completion(granted)
+                    
                 } else {
                     // 거부.
-                    self.requestAccessLocation()
+                    
                 }
             }
         }

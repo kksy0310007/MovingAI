@@ -10,14 +10,14 @@ import SnapKit
 import SwiftyToaster
 import Starscream
 import Alamofire
+import AVFoundation
 
-class CamMonitorViewController: UIViewController {
+class CamMonitorViewController: UIViewController, URLSessionDelegate {
 
     let ZOOM_IN_VALUE: CGFloat = 1.5
     let ZOOM_OUT_VALUE: CGFloat = 0.65
     let MAX_SCALE: CGFloat = 3.3
     let MIN_SCALE: CGFloat = 1
-    
     
     var titleString: String? = ""
     let nxCamData = NxCamMethods.shared
@@ -38,11 +38,17 @@ class CamMonitorViewController: UIViewController {
     
     // WebSocket 인스턴스
     private var socket: WebSocket?
+    private var Rtpsocket: WebSocket?
         
     var presetServerDataList: [PresetManageData] = []
     var devicePresetList: [PresetManageData] = []
     var presetDataList: [PresetData] = []
     
+    private var isRecording = false
+    var audioStreamingManager = AudioStreamingManager()
+    
+    private let bufferSize: Int = 1024
+
     // 모니터 뷰 버튼
     let channelSwitch: CustomSwitch = {
         let view = CustomSwitch()
@@ -420,6 +426,9 @@ class CamMonitorViewController: UIViewController {
     deinit {
       socket?.disconnect()
       socket?.delegate = nil
+        
+      Rtpsocket?.disconnect()
+      Rtpsocket?.delegate = nil
     }
     
     override func viewDidLoad() {
@@ -438,6 +447,8 @@ class CamMonitorViewController: UIViewController {
         
         checkSelectedDeviceData()
         initPresetVoiceData()
+        
+        setupWebSocket()
         
     }
 
@@ -940,6 +951,14 @@ class CamMonitorViewController: UIViewController {
     @objc func didTapMicView() {
         print("select didTapMicView")
         
+        let micPopupVC = MicPopupViewController()
+        micPopupVC.delegate = self
+        micPopupVC.modalPresentationStyle = .overFullScreen
+        micPopupVC.modalTransitionStyle = .crossDissolve
+        present(micPopupVC, animated: true)
+        
+        
+        
     }
     
     @objc func didTapPlayView() {
@@ -1021,13 +1040,13 @@ class CamMonitorViewController: UIViewController {
         }
     }
     
-    func processRtpMic() {
-        
-    }
-    
-    func processPresetVoice() {
-        
-    }
+//    func processRtpMic() {
+//        
+//    }
+//    
+//    func processPresetVoice() {
+//        
+//    }
     
     func patrolOn() {
         LoadingIndicator.shared.show()
@@ -1308,25 +1327,43 @@ extension CamMonitorViewController: WebSocketDelegate {
     func didReceive(event: Starscream.WebSocketEvent, client: any Starscream.WebSocketClient) {
         switch event {
         case .connected(let headers):
-          
+            if client === socket {
+                print("WebSocket connected.")
+            } else if client === Rtpsocket {
+                print("Rtpsocket connected.")
+            }
           print("websocket is connected: \(headers)")
         case .disconnected(let reason, let code):
-          print("websocket is disconnected: \(reason) with code: \(code)")
+            if client === socket {
+                print("websocket is disconnected: \(reason) with code: \(code)")
+            } else if client === Rtpsocket {
+                print("Rtpsocket is disconnected: \(reason) with code: \(code)")
+            }
+          
         case .text(let text):
-          print("received text: \(text)")
+            if client === socket {
+                print("websocket received text: \(text)")
+            } else if client === Rtpsocket {
+                print("Rtpsocket received text: \(text)")
+            }
+          
         case .binary(let data):
-          print("Received data: \(data.count)")
-            
-            DispatchQueue.main.async {
-                // 이미지 데이터 처리
-                if let image = UIImage(data: data) {
-                    self.monitorImageView.image = image
-                    self.monitorFullScreenImageView.image = image
-                    
-                } else {
-                    print("Failed to decode image data")
-                }
-                LoadingIndicator.shared.hide()
+            if client === socket {
+                print("Received data: \(data.count)")
+                  
+                  DispatchQueue.main.async {
+                      // 이미지 데이터 처리
+                      if let image = UIImage(data: data) {
+                          self.monitorImageView.image = image
+                          self.monitorFullScreenImageView.image = image
+                          
+                      } else {
+                          print("Failed to decode image data")
+                      }
+                      LoadingIndicator.shared.hide()
+                  }
+            } else if client === Rtpsocket {
+                print("Rtpsocket Received data: \(data.count)")
             }
             
         case .ping(_):
@@ -1348,7 +1385,8 @@ extension CamMonitorViewController: WebSocketDelegate {
         
     }
 }
-extension CamMonitorViewController: PopupDelegate {
+extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, URLSessionWebSocketDelegate {
+
     func popupDidSelectItem(index: Int) {
         print("선택된 아이템 인덱스: \(index)")
         
@@ -1397,9 +1435,6 @@ extension CamMonitorViewController: PopupDelegate {
     
     // 방송 전파이력 생성
     private func broadcastHistoryCreate(apiType: String, eventKind: String) {
-        
-//        let targetHistory = BroadcastCreateBodyDataModel(id: Int(selectedDeviceData?.sessionId ?? "0"), apiType: apiType ?? "", eventKind: eventKind ?? "", userId: UserAccountMethods.shared.movingAIUserAccount?.userId ?? "")
-        
         let url = baseDataApiUrl + "broadcastHistory/create"
         
         // HTTP 헤더
@@ -1410,10 +1445,6 @@ extension CamMonitorViewController: PopupDelegate {
         ]
         
         // 요청 파라미터
-//        let parameters: Parameters = [
-//            "BroadcastCreateBodyDataModel": targetHistory
-//        ]
-        
         let parameters: [String: Any] = [
             "id": Int(selectedDeviceData?.sessionId ?? "0"),
             "apiType": apiType,
@@ -1438,5 +1469,51 @@ extension CamMonitorViewController: PopupDelegate {
                 }
                 
             }
+    }
+    
+    func micButtonTouchDown() {
+        print("마이크 버튼 누름!!!!!!!!!")
+        isRecording = true
+        
+        // 녹음 장치 권한 체크
+        let permission = PermissionViewModel()
+        permission.requestMicrophonePermission { [weak self] granted in
+            print("micButtonTouchDown granted : \(granted)")
+            print("micButtonTouchDown isRecording : \(self?.isRecording)")
+            guard let self = self else { return }
+            
+            if granted {
+                do {
+                    if isRecording {
+                        // 스트리밍 시작
+                        audioStreamingManager.start()
+                    }
+                    
+                } catch {
+                    print("Failed to configure audio session: \(error)")
+                }
+            } else {
+                print("Microphone permission not granted")
+            }
+        }
+    }
+    
+    func micButtonTouchUpInside() {
+        print("마이크 버튼 뗌!!!!!!!!!")
+        isRecording = false
+        
+        // 스트리밍 중단
+        audioStreamingManager.stop()
+        
+        broadcastHistoryCreate(apiType: "REALTIME_VOICE", eventKind: "")
+    }
+
+    
+    private func setupWebSocket() {
+        var socketUrl = "wss://platform.moving-ai.com/mic/"
+        if let session = selectedDeviceData?.sessionId {
+            socketUrl += session
+        }
+        audioStreamingManager.getURL(webSocketURL: socketUrl)
     }
 }
