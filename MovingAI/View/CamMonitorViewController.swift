@@ -1193,23 +1193,45 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     /** 이미지 뷰 확대 */
         func imageViewPlayerZoomIn() {
             let targetView = isFullScreen ? monitorFullScreenImageView : monitorImageView
-            let currentScaleX = targetView.transform.a
             
-            if currentScaleX >= MIN_SCALE {
-                let newScaleX = min(currentScaleX * ZOOM_IN_VALUE, MAX_SCALE)
-                targetView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleX)
+            if (isFullScreen) {
+                let currentScaleX = targetView.transform.b
+                
+                if currentScaleX >= MIN_SCALE {
+                    let newScaleX = min(currentScaleX * ZOOM_IN_VALUE, MAX_SCALE)
+                    targetView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleX)
+                    targetView.rotate(angle: 90)
+                }
+
+            } else {
+                let currentScaleX = targetView.transform.a
+                
+                if currentScaleX >= MIN_SCALE {
+                    let newScaleX = min(currentScaleX * ZOOM_IN_VALUE, MAX_SCALE)
+                    targetView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleX)
+                }
             }
         }
 
         /** 이미지 뷰 축소 */
         func imageViewPlayerZoomOut() {
             let targetView = isFullScreen ? monitorFullScreenImageView : monitorImageView
-            let currentScaleX = targetView.transform.a
+            
+            if (isFullScreen) {
+                let currentScaleX = targetView.transform.b
 
-            if currentScaleX > MIN_SCALE {
-                let newScaleX = max(currentScaleX * ZOOM_OUT_VALUE, MIN_SCALE)
-
-                targetView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleX)
+                if currentScaleX > MIN_SCALE {
+                    let newScaleX = max(currentScaleX * ZOOM_OUT_VALUE, MIN_SCALE)
+                    targetView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleX)
+                    targetView.rotate(angle: 90)
+                }
+            } else {
+                let currentScaleX = targetView.transform.a
+                
+                if currentScaleX > MIN_SCALE {
+                    let newScaleX = max(currentScaleX * ZOOM_OUT_VALUE, MIN_SCALE)
+                    targetView.transform = CGAffineTransform(scaleX: newScaleX, y: newScaleX)
+                }
             }
         }
     
