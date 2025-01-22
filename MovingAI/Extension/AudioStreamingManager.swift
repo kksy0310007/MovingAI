@@ -84,7 +84,7 @@ class AudioStreamingManager: NSObject {
         var offset = 0
 
         while offset < totalSize {
-            let length = min(1024, totalSize - offset)
+            let length = min(8192, totalSize - offset)
             let chunk = data.subdata(in: offset..<offset + length)
             webSocket?.write(data: chunk) // 각 청크를 전송
             offset += length

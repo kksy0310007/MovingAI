@@ -47,8 +47,12 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     private var isRecording = false
     var audioStreamingManager = AudioStreamingManager()
     
-    private let bufferSize: Int = 1024
-
+    // 하단 넥서스캠 리스트 bottomSheet
+    let sheet = BottomSheetView()
+    private var sheetHeightConstraint: Constraint?
+    private let minSheetHeight: CGFloat = 45
+    private let maxSheetHeight: CGFloat = 250
+    
     // 모니터 뷰 버튼
     let channelSwitch: CustomSwitch = {
         let view = CustomSwitch()
@@ -664,6 +668,20 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
             make.centerX.equalToSuperview().multipliedBy(1)
             make.height.width.equalTo(64)
         }
+        
+        
+        // 하단 장비 리스트
+        self.bottomView.addSubview(sheet)
+        sheet.snp.makeConstraints { make in
+            make.bottom.equalToSuperview()
+            make.width.equalToSuperview()
+            sheetHeightConstraint = make.height.equalTo(minSheetHeight).constraint
+        }
+        let gestureRecognizer = UIPanGestureRecognizer(target: self, action:
+                #selector(handlePanGesture))
+                
+        gestureRecognizer.cancelsTouchesInView = false
+        sheet.addGestureRecognizer(gestureRecognizer)
     }
     
     func initFullMonitorView() {
@@ -1027,6 +1045,43 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         imageViewPlayerZoomOut()
     }
     
+    @objc func handlePanGesture(gesture:UIPanGestureRecognizer) {
+        
+        let translation = gesture.translation(in: sheet)
+        
+        if gesture.state == .began {
+            print("Began")
+        } else if gesture.state == .changed {
+            print("Changed")
+            
+            // 기존 높이에서 translation 값 적용
+            var newHeight = sheetHeightConstraint?.layoutConstraints.first?.constant ?? minSheetHeight
+            newHeight -= translation.y
+
+            // 높이 제한 설정
+            newHeight = max(minSheetHeight, min(maxSheetHeight, newHeight))
+            
+            // 제약 조건 업데이트
+            sheetHeightConstraint?.update(offset: newHeight)
+            // 팬 제스처 이동 값 초기화
+            gesture.setTranslation(.zero, in: sheet)
+            
+            
+        } else if gesture.state == .ended {
+            print("Ended")
+                        
+            // 애니메이션으로 가장 가까운 높이로 이동
+            let currentHeight = sheetHeightConstraint?.layoutConstraints.first?.constant ?? minSheetHeight
+            let targetHeight: CGFloat = (currentHeight - minSheetHeight) > (maxSheetHeight - currentHeight) / 2 ? maxSheetHeight : minSheetHeight
+
+            UIView.animate(withDuration: 0.3) {
+                self.sheetHeightConstraint?.update(offset: targetHeight)
+                self.view.layoutIfNeeded()
+            }
+        }
+         
+    }
+    
     
     func checkSelectedDeviceData() {
         if let selectedData = nxCamData.selectedDeviceInfo {
@@ -1039,14 +1094,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
             navigationController?.popViewController(animated: true)
         }
     }
-    
-//    func processRtpMic() {
-//        
-//    }
-//    
-//    func processPresetVoice() {
-//        
-//    }
     
     func patrolOn() {
         LoadingIndicator.shared.show()
@@ -1067,21 +1114,17 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
                 .response { response in
                     switch response.result {
                         case .success(let data):
-                            print("camRotateControl ==== > data : \(data)")
+                            print("patrolOn ==== > data : \(data)")
                             Toaster.shared.makeToast("패트롤 ON", .short)
                             
                         case .failure(let error):
-                            print("camRotateControl ==== > error : \(error)")
+                            print("patrolOn ==== > error : \(error)")
                     }
-                    
             }
             
         } else {
             print("sessionId가 nil입니다.")
         }
-        
-        
-        
     }
     
     func patrolOff() {
@@ -1105,18 +1148,16 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
                     
                     switch response.result {
                         case .success(let data):
-                        print("camRotateControl ==== > data : \(data)")
+                        print("patrolOn ==== > data : \(data)")
                             Toaster.shared.makeToast("패트롤 OFF", .middle)
                             
                         case .failure(let error):
-                            print("camRotateControl ==== > error : \(error)")
+                            print("patrolOn ==== > error : \(error)")
                     }
             }
         } else {
             print("sessionId가 nil입니다.")
         }
-        
-
     }
     
     // PTZ 컨트롤 버튼 설정
@@ -1333,8 +1374,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
                         // 값 업음
                         Toaster.shared.makeToast("안내방송이 존재하지 않습니다.")
                     }
-                    
-                    
                     
                 case .failure(let error):
                     print("getPresetVoiceData - 실패하였습니다 :: \(error)" )
