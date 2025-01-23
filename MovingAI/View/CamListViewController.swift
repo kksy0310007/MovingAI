@@ -91,11 +91,14 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
     // 셀에 데이터 넣음
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CamListCell.identifier, for: indexPath) as! CamListCell
-                
-            cell.title.text = camList[indexPath.row].deviceName
-            cell.dateLabel.text = camList[indexPath.row].eventTime
-            cell.selectionStyle = .none
-            return cell
+        
+        let height = CamListCellHeight.expanded
+        cell.updateCellHeight(to: height)
+        
+        cell.title.text = camList[indexPath.row].deviceName
+        cell.dateLabel.text = camList[indexPath.row].eventTime
+        cell.selectionStyle = .none
+        return cell
 
     }
 

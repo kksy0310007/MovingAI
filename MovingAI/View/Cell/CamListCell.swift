@@ -8,8 +8,16 @@
 import UIKit
 import SnapKit
 
+enum CamListCellHeight: CGFloat {
+    case expanded = 97
+    case simple = 65
+}
+
+
 class CamListCell: UITableViewCell {
+    
     static let identifier = "CamListCell"
+    private var currentHeight: CamListCellHeight = .expanded
     
     let title: UILabel = {
         let label = UILabel()
@@ -73,10 +81,29 @@ class CamListCell: UITableViewCell {
         }
         
         imageBtn.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
+            make.centerY.equalTo(title.snp.centerY)
             make.height.width.equalTo(26)
             make.trailing.equalToSuperview().offset(-15)
             
         }
     }
+    
+    // 높이를 업데이트하는 메서드
+        func updateCellHeight(to height: CamListCellHeight) {
+            self.currentHeight = height
+            
+            // 높이에 따라 레이아웃 변경
+            switch height {
+            case .expanded:
+                title.isHidden = false
+                dateLabel.isHidden = false
+            case .simple:
+                title.isHidden = false
+                dateLabel.isHidden = true
+            }
+            
+            // 강제로 레이아웃 갱신
+            setNeedsLayout()
+            layoutIfNeeded()
+        }
 }

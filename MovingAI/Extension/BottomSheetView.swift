@@ -8,11 +8,28 @@
 import UIKit
 import SnapKit
 
+protocol BottomSheetDelegate: AnyObject {
+    func bottomSheetDidSelectItem(index: Int)
+}
+
 class BottomSheetView: UIView {
+    
+    let nxCamData = NxCamMethods.shared
+    var camList: [NxCamDeviceInfo] = []
+    
+    // 델리게이트 선언
+    weak var delegate: BottomSheetDelegate?
+    
     var lineView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(cgColor: CGColor(red: 207/255, green: 207/255, blue: 207/255, alpha: 1.0))
         return view
+    }()
+    
+    let tableView : UITableView = {
+        let tableView = UITableView()
+        tableView.register(CamListCell.self, forCellReuseIdentifier: CamListCell.identifier)
+        return tableView
     }()
         
     override init(frame: CGRect) {
@@ -21,14 +38,19 @@ class BottomSheetView: UIView {
         setupViewHierarchy()
         setupViewAttributes()
         setupLayout()
-    }
         
+        camList = nxCamData.getDeviceInfoList()
+        
+        tableView.reloadData() // 데이터 소스 갱신
+    }
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
         
     func setupViewHierarchy(){
         self.addSubview(lineView)
+        self.addSubview(tableView)
     }
         
     func setupViewAttributes(){
@@ -37,6 +59,9 @@ class BottomSheetView: UIView {
         self.layer.cornerRadius = 28
         self.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner] // 왼쪽 위, 오른쪽 위 모서리만 둥글게
         self.clipsToBounds = true
+        
+        tableView.dataSource = self
+        tableView.delegate = self
     }
         
     func setupLayout(){
@@ -47,5 +72,40 @@ class BottomSheetView: UIView {
             make.centerX.equalToSuperview()
             make.width.equalTo(30)
         }
+        
+        tableView.backgroundColor = .red
+        tableView.snp.makeConstraints { make in
+            make.top.equalTo(lineView.snp.bottom).offset(10)
+            make.leading.trailing.bottom.equalToSuperview().inset(10)
+        }
+        tableView.rowHeight = CamListCellHeight.simple.rawValue
+    }
+}
+extension BottomSheetView: UITableViewDataSource, UITableViewDelegate {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return nxCamData.getDeviceInfoList().count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: CamListCell.identifier, for: indexPath) as! CamListCell
+        
+        let height = CamListCellHeight.simple
+        cell.updateCellHeight(to: height)
+        
+        cell.title.text = camList[indexPath.row].deviceName
+        cell.selectionStyle = .none
+            
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("Selected item at row \(indexPath.row)")
+        
+        let nxCamData = NxCamMethods.shared
+        let selected = nxCamData.getDeviceInfoList()[indexPath.row]
+        nxCamData.setSelectedDeviceInfo(selected)
+        print("selected =  \(selected.deviceName)")
+        
+        self.delegate?.bottomSheetDidSelectItem(index: indexPath.row)
     }
 }

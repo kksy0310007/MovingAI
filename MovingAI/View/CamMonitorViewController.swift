@@ -25,7 +25,10 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     
     // 버튼 보임/가림 처리
     var monitorButtnFlag = true
-    var monitorFullScreenButtnFlag = true
+    var monitorFullScreenButtonFlag = true
+    
+    // fullView에서 화면 돌리기 flag
+    var isInitSettting = true
     
     var camChannel = "1"
     
@@ -435,6 +438,15 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
       Rtpsocket?.delegate = nil
     }
     
+    func reloadViewController() {
+        // 현재 ViewController의 root view를 다시 로드
+        self.view.setNeedsLayout()
+        self.view.layoutIfNeeded()
+        
+        // 데이터 갱신 작업
+        self.viewDidLoad()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -672,6 +684,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         
         // 하단 장비 리스트
         self.bottomView.addSubview(sheet)
+        sheet.delegate = self
         sheet.snp.makeConstraints { make in
             make.bottom.equalToSuperview()
             make.width.equalToSuperview()
@@ -722,19 +735,16 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         self.monitorFullScreenButtonsView.addSubview(fullScreenChannelLabel)
         self.monitorFullScreenButtonsView.addSubview(fullScreenBackButton)
         
-        fullScreenBackButton.rotate(angle: 90)
         fullScreenBackButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-30)
             make.top.equalToSuperview()
         }
         
-        fullScreenChannelLabel.rotate(angle: 90)
         fullScreenChannelLabel.snp.makeConstraints { make in
             make.top.equalTo(fullScreenBackButton.snp.bottom).offset(25)
             make.centerX.equalTo(fullScreenBackButton.snp.centerX)
         }
         
-        fullScreenChannelSwitch.rotate(angle: 90)
         fullScreenChannelSwitch.snp.makeConstraints { make in
             make.centerX.equalTo(fullScreenBackButton.snp.centerX)
             make.bottom.equalToSuperview()
@@ -744,7 +754,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
      
         
         self.monitorFullScreenButtonsView.addSubview(fullScreenOnButton)
-        fullScreenOnButton.rotate(angle: 90)
+        
         fullScreenOnButton.snp.makeConstraints { make in
             make.centerY.equalTo(fullScreenChannelSwitch.snp.centerY)
             make.centerX.equalToSuperview().multipliedBy(0.6)
@@ -753,7 +763,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         }
         
         self.monitorFullScreenButtonsView.addSubview(fullScreenOffButton)
-        fullScreenOffButton.rotate(angle: 90)
         fullScreenOffButton.snp.makeConstraints { make in
             make.centerY.equalTo(fullScreenChannelSwitch.snp.centerY)
             make.trailing.equalTo(fullScreenOnButton.snp.leading).offset(10)
@@ -762,7 +771,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         }
         
         self.monitorFullScreenButtonsView.addSubview(fullScreenPlayButton)
-        fullScreenPlayButton.rotate(angle: 90)
         fullScreenPlayButton.snp.makeConstraints { make in
             make.leading.equalTo(fullScreenOnButton.snp.trailing)
             make.centerY.equalTo(fullScreenChannelSwitch.snp.centerY)
@@ -770,7 +778,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         }
         
         self.monitorFullScreenButtonsView.addSubview(fullScreenMicButton)
-        fullScreenMicButton.rotate(angle: 90)
         fullScreenMicButton.snp.makeConstraints { make in
             make.centerY.equalTo(fullScreenChannelSwitch.snp.centerY)
             make.leading.equalTo(fullScreenPlayButton.snp.trailing)
@@ -778,7 +785,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         }
         
         self.monitorFullScreenButtonsView.addSubview(fullScreenPlusButton)
-        fullScreenPlusButton.rotate(angle: 90)
         fullScreenPlusButton.snp.makeConstraints { make in
             make.centerX.equalToSuperview().offset(40)
             make.bottom.equalTo(fullScreenMicButton.snp.top).offset(-20)
@@ -786,7 +792,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         }
         
         self.monitorFullScreenButtonsView.addSubview(fullScreenMinusButton)
-        fullScreenMinusButton.rotate(angle: 90)
         fullScreenMinusButton.snp.makeConstraints { make in
             make.centerY.equalTo(fullScreenPlusButton)
             make.trailing.equalTo(fullScreenPlusButton.snp.leading).offset(-60)
@@ -804,10 +809,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         fullScreenControllerBackView.addSubview(fullScreenSButton)
         fullScreenControllerBackView.addSubview(fullScreenEButton)
         fullScreenControllerBackView.addSubview(fullScreenWButton)
-        fullScreenNButton.rotate(angle: 90)
-        fullScreenSButton.rotate(angle: 90)
-        fullScreenEButton.rotate(angle: 90)
-        fullScreenWButton.rotate(angle: 90)
         
         fullScreenWButton.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -836,6 +837,27 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         setMonitorFullScreenButtonsViewFlag()
         monitorFullScreenView.isHidden = true
         isFullScreen = false
+        
+        
+        if isInitSettting {
+            fullScreenBackButton.rotate(angle: 90)
+            fullScreenChannelLabel.rotate(angle: 90)
+            fullScreenChannelSwitch.rotate(angle: 90)
+            fullScreenOnButton.rotate(angle: 90)
+            fullScreenOffButton.rotate(angle: 90)
+            fullScreenPlayButton.rotate(angle: 90)
+            fullScreenMicButton.rotate(angle: 90)
+            fullScreenPlusButton.rotate(angle: 90)
+            fullScreenMinusButton.rotate(angle: 90)
+            
+            fullScreenNButton.rotate(angle: 90)
+            fullScreenSButton.rotate(angle: 90)
+            fullScreenEButton.rotate(angle: 90)
+            fullScreenWButton.rotate(angle: 90)
+            
+            isInitSettting = false
+        }
+        
     }
     
     
@@ -848,7 +870,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     }
     
     func setMonitorFullScreenButtonsViewFlag() {
-        if (monitorFullScreenButtnFlag) {
+        if (monitorFullScreenButtonFlag) {
             monitorFullScreenButtonsView.isHidden = false
         } else {
             monitorFullScreenButtonsView.isHidden = true
@@ -936,7 +958,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         // 터치가 channelSwitch의 영역 안에 있지 않으면 버튼을 숨기기
         if !fullScreenChannelSwitch.frame.contains(touchLocation) {
             print("select didTapMonitorButtonsView")
-            monitorFullScreenButtnFlag = false
+            monitorFullScreenButtonFlag = false
             setMonitorFullScreenButtonsViewFlag()
         } else {
             if self.fullScreenChannelSwitch.isOn {
@@ -952,7 +974,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     
     @objc func didTapMonitorFullScreenView() {
         print("select didTapMonitorFullScreenView")
-        monitorFullScreenButtnFlag = true
+        monitorFullScreenButtonFlag = true
         setMonitorFullScreenButtonsViewFlag()
     }
     
@@ -1446,7 +1468,7 @@ extension CamMonitorViewController: WebSocketDelegate {
         
     }
 }
-extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, URLSessionWebSocketDelegate {
+extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, BottomSheetDelegate, URLSessionWebSocketDelegate {
 
     func popupDidSelectItem(index: Int) {
         print("선택된 아이템 인덱스: \(index)")
@@ -1577,4 +1599,12 @@ extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, URLSessionW
         }
         audioStreamingManager.getURL(webSocketURL: socketUrl)
     }
+    
+    func bottomSheetDidSelectItem(index: Int) {
+        print("선택된 아이템 인덱스: \(index)")
+        
+        reloadViewController()
+    }
+    
+    
 }
