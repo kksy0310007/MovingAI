@@ -447,6 +447,16 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         self.viewDidLoad()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+//        socket?.delegate = self
+//        socket?.connect()
+//        
+//        Rtpsocket?.delegate = self
+//        Rtpsocket?.connect()
+//
+//        reloadViewController()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -467,6 +477,17 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         setupWebSocket()
         
     }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        socket?.disconnect()
+        socket?.delegate = nil
+          
+        Rtpsocket?.disconnect()
+        Rtpsocket?.delegate = nil
+        
+        navigationController?.popViewController(animated: true)
+    }
+    
 
     private func initMonitorView() {
         
