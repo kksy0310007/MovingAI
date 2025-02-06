@@ -53,6 +53,8 @@ class EventNotificationViewController: UIViewController {
         searchView.layer.borderWidth = 3
         searchView.layer.borderColor = UIColor(red: 221/255, green: 221/255, blue: 221/255, alpha: 1.0).cgColor
         
+        let tapSearchViewGesture = UITapGestureRecognizer(target: self, action: #selector(didTapSearchView))
+        searchView.addGestureRecognizer(tapSearchViewGesture)
         
         view.addSubview(searchView)
         
@@ -162,10 +164,20 @@ class EventNotificationViewController: UIViewController {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: Date())
     }
+    
+    @objc func didTapSearchView() {
+        print("select didTapSearchView")
 
+        let popupVC = EventFilterPopupViewController()
+        popupVC.delegate = self
+        popupVC.modalPresentationStyle = .overFullScreen
+        popupVC.modalTransitionStyle = .crossDissolve
+        present(popupVC, animated: true)
+    }
     
 }
-extension EventNotificationViewController: UITableViewDataSource, UITableViewDelegate {
+extension EventNotificationViewController: UITableViewDataSource, UITableViewDelegate, EventFilterPopupDelegate {
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return eventList.count
     }
@@ -182,4 +194,10 @@ extension EventNotificationViewController: UITableViewDataSource, UITableViewDel
         cell.selectionStyle = .none
         return cell
     }
+    
+    
+    func popupDidSelectButton() {
+        print("필터 적용 완료!!!!!")
+    }
+    
 }
