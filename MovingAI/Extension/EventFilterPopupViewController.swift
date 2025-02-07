@@ -15,11 +15,14 @@ protocol EventFilterPopupDelegate: AnyObject {
 class EventFilterPopupViewController: UIViewController {
     
     // 장비 리스트
-//    private let deviceListData: [AssetData]
+    private var deviceListData: [AssetData] = []
     // 이벤트 리스트
-//    private let eventListData: [AssetData] // 수정 필요
+    private let eventData = ["battery","faint","hook","helmet","invasion","panic","fire"]
+    private var eventListData: [String] = []
+    let eventDataInstance = NxCamEventData()
+
     // 날짜 데이터
-//    private let selectedDate: String
+    private var selectedDate: String = ""
     
     // 델리게이트 선언
     weak var delegate: EventFilterPopupDelegate?
@@ -30,8 +33,6 @@ class EventFilterPopupViewController: UIViewController {
     let datePickerView = UIDatePicker()
     
     var selectedPickerType: Int = 0  // 1: 첫 번째 피커, 2: 두 번째 피커
-    let firstPickerData = ["Apple", "Banana", "Cherry", "Date"]
-    let secondPickerData = ["Red", "Green", "Blue", "Yellow"]
     
     private let contentView: UIView = {
         let view = UIView()
@@ -83,7 +84,7 @@ class EventFilterPopupViewController: UIViewController {
     
     private let deviceFilterButton: UIButton = {
         let button = UIButton()
-        let imageConfig = UIImage.SymbolConfiguration(pointSize: 24, weight: .light)
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .light)
         let image = UIImage(systemName: "chevron.down", withConfiguration: imageConfig)
         button.semanticContentAttribute = .forceRightToLeft
         button.contentHorizontalAlignment = .trailing
@@ -106,7 +107,7 @@ class EventFilterPopupViewController: UIViewController {
     
     private let eventFilterButton: UIButton = {
         let button = UIButton()
-        let imageConfig = UIImage.SymbolConfiguration(pointSize: 24, weight: .light)
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 22, weight: .light)
         let image = UIImage(systemName: "chevron.down", withConfiguration: imageConfig)
         button.semanticContentAttribute = .forceRightToLeft
         button.contentHorizontalAlignment = .trailing
@@ -146,7 +147,7 @@ class EventFilterPopupViewController: UIViewController {
         super.viewDidLoad()
         
         setConstraint()
-        
+        setListData()
     }
     
     func setConstraint() {
@@ -266,14 +267,25 @@ class EventFilterPopupViewController: UIViewController {
         
     }
     
+    func setListData() {
+        // 장비 리스트
+        deviceListData = TopAssetsMethods.shared.getAllSitesAssetsList()
+        
+        // 이벤트
+        eventListData = eventData.map { eventDataInstance.setEventNameAutomatic(event: $0) }
+        
+        
+        
+    }
+    
     @objc private func closeButtonTapped() {
         dismiss(animated: true)
     }
     
     @objc private func okButtonTapped() {
         print("okButtonTapped")
-        
         delegate?.popupDidSelectButton()
+        
     }
     
     @objc private func dateFilterButtonTapped() {
@@ -297,10 +309,11 @@ class EventFilterPopupViewController: UIViewController {
     
     @objc private func handleDatePicker(_ sender: UIDatePicker) {
         dateFilterButton.setTitle(dateFormat(date: sender.date), for: .normal)
+        selectedDate = dateFormat(date: sender.date)
         datePickerView.isHidden = true
     }
 
-    // PickerView 표시 (애니메이션 효과)
+    // PickerView 표시
     func showPicker() {
         pickerView.isHidden = false
         pickerToolbar.isHidden = false
@@ -316,7 +329,8 @@ class EventFilterPopupViewController: UIViewController {
         datePickerView.transform = CGAffineTransform(translationX: 0, y: pickerView.frame.height)
         self.datePickerView.transform = .identity
     }
-        // PickerView 숨김
+    
+    // PickerView 숨김
     @objc func dismissPicker() {
         self.pickerView.isHidden = true
         self.pickerToolbar.isHidden = true
@@ -337,22 +351,22 @@ extension EventFilterPopupViewController: UIPickerViewDelegate, UIPickerViewData
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
 
         if selectedPickerType == 1 {
-            return firstPickerData[row]
+            return deviceListData[row].name
         } else {
-            return secondPickerData[row]
+            return eventListData[row]
         }
     }
 
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         if selectedPickerType == 1 {
-            return firstPickerData.count
+            return deviceListData.count
         } else {
-            return secondPickerData.count
+            return eventListData.count
         }
     }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        let selectedValue = selectedPickerType == 1 ? firstPickerData[row] : secondPickerData[row]
+        let selectedValue = selectedPickerType == 1 ? deviceListData[row].name : eventListData[row]
         
         if selectedPickerType == 1 {
             deviceFilterButton.setTitle(selectedValue, for: .normal)

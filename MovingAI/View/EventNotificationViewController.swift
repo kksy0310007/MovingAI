@@ -120,19 +120,22 @@ class EventNotificationViewController: UIViewController {
 
                         let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.getAllSitesAssetsList()
                     
-                        if data != nil {
                             for targetAssetData in allSitesAssetsList {
+                                print("호출 확인 1 ==== > targetAssetData : \(targetAssetData)")
                                 for targetEventResult in data {
+                                    print("호출 확인 2 ==== > targetEventResult : \(targetEventResult)")
                                     if targetEventResult.assetId == targetAssetData.id {
+                                        print("호출 확인 3==== > targetEventResult.assetId : \(targetEventResult), targetAssetData.id : \(targetAssetData.id)")
                                         self.eventList.append(targetEventResult)
                                     }
                                 }
                             }
+                        
+                        if self.eventList != nil {
+                            print("감지 이벤트 목록 api 호출 !!!! ==== > eventList : \(self.eventList)")
                         } else {
                             Toaster.shared.makeToast("이벤트가 존재하지 않습니다.", .short)
                         }
-                    print("감지 이벤트 목록 api 호출 !!!! ==== > eventList : \(self.eventList)")
-                        
                     case .failure(let error):
                         print("감지 이벤트 목록 api 호출 getEventLogsApi ==== > error : \(error)")
                 }
@@ -187,9 +190,10 @@ extension EventNotificationViewController: UITableViewDataSource, UITableViewDel
         
         let item = eventList[indexPath.row]
         
-//        cell.title.text = item
-//        cell.dateLabel.text =
-//        cell.eventLabel.text =
+        cell.title.text = item.assetName
+        cell.dateLabel.text = item.regDate
+        
+        cell.eventLabel.text = item.eventName
 
         cell.selectionStyle = .none
         return cell
