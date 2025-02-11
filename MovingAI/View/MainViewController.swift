@@ -151,6 +151,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                         print("addMarkerLayer - JavaScript execution error: \(error.localizedDescription)")
                     } else {
                         print("addMarkerLayer - JavaScript executed successfully: \(result ?? "No result")")
+//                        Toaster.shared.makeToast("장비가 존재하지 않습니다.", .middle)
                     }
                 }
             }

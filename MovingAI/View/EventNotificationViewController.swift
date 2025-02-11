@@ -15,6 +15,8 @@ class EventNotificationViewController: UIViewController {
     
     var eventList: [EventResult] = []
     
+    lazy var requestParams: [String: Any] = createRequestParameters()
+    
     let textLabel: UILabel = {
         let label = UILabel()
         label.text = "날짜 / 장비 / 이벤트"
@@ -43,6 +45,7 @@ class EventNotificationViewController: UIViewController {
         super.viewDidLoad()
         
         addNavigationBar(titleString: "이벤트 조회",isBackButtonVisible: false)
+        requestParams = createRequestParameters()
         getEventLogsApi()
         initView()
     }
@@ -103,9 +106,9 @@ class EventNotificationViewController: UIViewController {
         ]
         
         // 요청 파라미터
-        let requestParams = createRequestParameters()
-        print("감지 이벤트 목록 api 호출 requestParams ==== >  \(requestParams)")
         
+        print("감지 이벤트 목록 api 호출 requestParams ==== >  \(requestParams)")
+        self.eventList.removeAll()
         AF.request(
             url,
             method: .post,
@@ -118,14 +121,12 @@ class EventNotificationViewController: UIViewController {
                     case .success(let data):
                         print("감지 이벤트 목록 api 호출 getEventLogsApi ==== > success data : \(data)")
 
-                        let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.getAllSitesAssetsList()
+                        let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.allSitesAssets
                     
                             for targetAssetData in allSitesAssetsList {
-                                print("호출 확인 1 ==== > targetAssetData : \(targetAssetData)")
                                 for targetEventResult in data {
-                                    print("호출 확인 2 ==== > targetEventResult : \(targetEventResult)")
                                     if targetEventResult.assetId == targetAssetData.id {
-                                        print("호출 확인 3==== > targetEventResult.assetId : \(targetEventResult), targetAssetData.id : \(targetAssetData.id)")
+                                        print("호출 확인 3==== > targetEventResult.assetId : \(targetEventResult.assetId), targetAssetData.id : \(targetAssetData.id)")
                                         self.eventList.append(targetEventResult)
                                     }
                                 }
@@ -133,6 +134,7 @@ class EventNotificationViewController: UIViewController {
                         
                         if self.eventList != nil {
                             print("감지 이벤트 목록 api 호출 !!!! ==== > eventList : \(self.eventList)")
+                            self.tableView.reloadData()
                         } else {
                             Toaster.shared.makeToast("이벤트가 존재하지 않습니다.", .short)
                         }
@@ -148,17 +150,22 @@ class EventNotificationViewController: UIViewController {
         id: Int? = nil,
         searchDate: String? = nil
     ) -> [String: Any] {
-        
         // 기본값
-        let parameters: [String: Any] = [
-            "page": page ?? 1,
-            "size": 10,
-            "sort": ["regDate,desc"],
-            "id": id ?? -1,
-            "searchDate": searchDate ?? getCurrentDate() // 기본값: 오늘 날짜
-        ]
-        
-        return parameters
+        return [
+               "page": page ?? 1,
+               "size": 10,
+               "sort": ["regDate,desc"],
+               "id": id ?? -1,
+               "searchDate": searchDate //?? getCurrentDate() // 기본값: 오늘 날짜
+           ]
+    }
+    
+    func updateRequestParameters(
+        page: Int? = nil,
+        id: Int? = nil,
+        searchDate: String? = nil
+    ) {
+        requestParams = createRequestParameters(page: page, id: id, searchDate: searchDate)
     }
 
     // 현재 날짜를 "yyyy-MM-dd" 형식으로 반환하는 함수
@@ -199,9 +206,11 @@ extension EventNotificationViewController: UITableViewDataSource, UITableViewDel
         return cell
     }
     
-    
-    func popupDidSelectButton() {
-        print("필터 적용 완료!!!!!")
+
+    func popupDidSelectButton(date: String, id: Int, event: String) {
+        print("필터 적용 완료!!!!! : date = \(date), id = \(id), event = \(event)")
+//        updateRequestParameters(id: id, searchDate: date)
+//        getEventLogsApi()
     }
     
 }

@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 
 protocol EventFilterPopupDelegate: AnyObject {
-    func popupDidSelectButton()
+    func popupDidSelectButton(date: String, id: Int, event: String)
 }
 
 class EventFilterPopupViewController: UIViewController {
@@ -21,8 +21,12 @@ class EventFilterPopupViewController: UIViewController {
     private var eventListData: [String] = []
     let eventDataInstance = NxCamEventData()
 
-    // 날짜 데이터
+    // 필터 선택 데이터
     private var selectedDate: String = ""
+    private var selectedEvent: String = ""
+    private var selectedId: Int = 0
+    
+    private var today = Date()
     
     // 델리게이트 선언
     weak var delegate: EventFilterPopupDelegate?
@@ -187,6 +191,8 @@ class EventFilterPopupViewController: UIViewController {
             make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(40)
         }
+        var dateString = dateFormat(date: today)
+        self.dateFilterButton.setTitle(dateString, for: .normal)
         
         self.deviceLabel.snp.makeConstraints { make in
             make.top.equalTo(dateFilterButton.snp.bottom).offset(15)
@@ -273,9 +279,6 @@ class EventFilterPopupViewController: UIViewController {
         
         // 이벤트
         eventListData = eventData.map { eventDataInstance.setEventNameAutomatic(event: $0) }
-        
-        
-        
     }
     
     @objc private func closeButtonTapped() {
@@ -284,8 +287,8 @@ class EventFilterPopupViewController: UIViewController {
     
     @objc private func okButtonTapped() {
         print("okButtonTapped")
-        delegate?.popupDidSelectButton()
-        
+        delegate?.popupDidSelectButton(date: selectedDate, id: selectedId, event: selectedEvent)
+        dismiss(animated: true)
     }
     
     @objc private func dateFilterButtonTapped() {
@@ -351,8 +354,10 @@ extension EventFilterPopupViewController: UIPickerViewDelegate, UIPickerViewData
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
 
         if selectedPickerType == 1 {
+            selectedId = deviceListData[row].id
             return deviceListData[row].name
         } else {
+            selectedEvent = eventListData[row]
             return eventListData[row]
         }
     }
