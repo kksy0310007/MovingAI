@@ -17,7 +17,7 @@ class EventFilterPopupViewController: UIViewController {
     // 장비 리스트
     private var deviceListData: [AssetData] = []
     // 이벤트 리스트
-    private let eventData = ["battery","faint","hook","helmet","invasion","panic","fire"]
+    private let eventData = ["선택","battery","faint","hook","helmet","invasion","panic","fire"]
     private var eventListData: [String] = []
     let eventDataInstance = NxCamEventData()
 
@@ -37,6 +37,7 @@ class EventFilterPopupViewController: UIViewController {
     let datePickerView = UIDatePicker()
     
     var selectedPickerType: Int = 0  // 1: 첫 번째 피커, 2: 두 번째 피커
+    
     
     private let contentView: UIView = {
         let view = UIView()
@@ -275,8 +276,28 @@ class EventFilterPopupViewController: UIViewController {
     
     func setListData() {
         // 장비 리스트
-        deviceListData = TopAssetsMethods.shared.getAllSitesAssetsList()
+        let initAssetData = AssetData(
+            id: 0,
+            lat: 0.0,
+            lon: 0.0,
+            assetkind: AssetKind(id: 0, type: "", name: nil, description: nil),
+            name: "선택",
+            description: "",
+            useyn: false,
+            serial: "",
+            regUser: "",
+            etc1: "",
+            etc2: "",
+            etc3: "",
+            etc4: "",
+            etc5: "",
+            attach: nil,
+            modDate: "",
+            location: ""
+        )
         
+        deviceListData = TopAssetsMethods.shared.getAllSitesAssetsList()
+        deviceListData.insert(initAssetData, at: 0)
         // 이벤트
         eventListData = eventData.map { eventDataInstance.setEventNameAutomatic(event: $0) }
     }
@@ -354,10 +375,8 @@ extension EventFilterPopupViewController: UIPickerViewDelegate, UIPickerViewData
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
 
         if selectedPickerType == 1 {
-            selectedId = deviceListData[row].id
             return deviceListData[row].name
         } else {
-            selectedEvent = eventListData[row]
             return eventListData[row]
         }
     }
@@ -374,9 +393,11 @@ extension EventFilterPopupViewController: UIPickerViewDelegate, UIPickerViewData
         let selectedValue = selectedPickerType == 1 ? deviceListData[row].name : eventListData[row]
         
         if selectedPickerType == 1 {
+            selectedId = deviceListData[row].id
             deviceFilterButton.setTitle(selectedValue, for: .normal)
         } else {
             eventFilterButton.setTitle(selectedValue, for: .normal)
+            selectedEvent = eventListData[row]
         }
     }
     

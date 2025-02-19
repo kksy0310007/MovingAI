@@ -58,10 +58,47 @@ struct AssetData: Codable {
     let modDate: String?
     let location: String?
    
-
-enum CodingKeys: CodingKey {
-    case id, lat, lon, assetkind, name, description, useyn, serial, regUser, etc1, etc2, etc3, etc4, etc5, attach, modDate, location
-}
+    init(
+            id: Int = 0,
+            lat: Double? = nil,
+            lon: Double? = nil,
+            assetkind: AssetKind = AssetKind(id: 0, type: "", name: nil, description: nil),
+            name: String? = nil,
+            description: String? = nil,
+            useyn: Bool? = nil,
+            serial: String = "",
+            regUser: String? = nil,
+            etc1: String? = nil,
+            etc2: String? = nil,
+            etc3: String? = nil,
+            etc4: String? = nil,
+            etc5: String? = nil,
+            attach: Attach? = nil,
+            modDate: String? = nil,
+            location: String? = nil
+        ) {
+            self.id = id
+            self.lat = lat
+            self.lon = lon
+            self.assetkind = assetkind
+            self.name = name
+            self.description = description
+            self.useyn = useyn
+            self.serial = serial
+            self.regUser = regUser
+            self.etc1 = etc1
+            self.etc2 = etc2
+            self.etc3 = etc3
+            self.etc4 = etc4
+            self.etc5 = etc5
+            self.attach = attach
+            self.modDate = modDate
+            self.location = location
+        }
+    
+    enum CodingKeys: CodingKey {
+        case id, lat, lon, assetkind, name, description, useyn, serial, regUser, etc1, etc2, etc3, etc4, etc5, attach, modDate, location
+    }
 
 
     init(from decoder: any Decoder) throws {

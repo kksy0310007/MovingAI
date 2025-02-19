@@ -29,7 +29,7 @@ class NxCamEventData {
         case "helmet":
             return "안전모 미착용"
         case "invasion":
-            return "위험구역 침입"
+            return "위험구역 접근"
         case "panic":
             return "패닉"
         case "fire":
