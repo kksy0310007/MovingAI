@@ -99,51 +99,9 @@ class EventNotificationViewController: UIViewController {
     
     // 감지 이벤트 목록 api 호출
     func getEventLogsApi() {
-        let url = "\(ApiUrl.baseDataApiUrl)event"
-        // HTTP 헤더
-        let headers: HTTPHeaders = [
-            "Authorization": "test",
-            "Content-Type": "application/json"
-        ]
-        
-        // 요청 파라미터
-//        print("감지 이벤트 목록 api 호출 requestParams ==== >  \(requestParams)")
-        
+   
         self.eventList.removeAll()
-        
-//        AF.request(
-//            url,
-//            method: .post,
-//            parameters: requestParams,
-//            encoding: JSONEncoding.default,
-//            headers: headers
-//        ).validate(statusCode: 200..<600)
-//            .responseDecodable(of: [EventResult].self) { response in
-//                switch response.result {
-//                    case .success(let data):
-////                        print("감지 이벤트 목록 api 호출 getEventLogsApi ==== > success data : \(data)")
-//
-//                        let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.allSitesAssets
-//                    
-//                            for targetAssetData in allSitesAssetsList {
-//                                for targetEventResult in data {
-//                                    if targetEventResult.assetId == targetAssetData.id {
-////                                        print("호출 확인 3==== > targetEventResult.assetId : \(targetEventResult.assetId), targetAssetData.id : \(targetAssetData.id)")
-//                                        self.eventList.append(targetEventResult)
-//                                    }
-//                                }
-//                            }
-//                        
-//                        if self.eventList != nil {
-//                            self.tableView.reloadData()
-//                        } else {
-//                            Toaster.shared.makeToast("이벤트가 존재하지 않습니다.", .short)
-//                        }
-//                    case .failure(let error):
-//                        print("getEventLogsApi ==== > error : \(error)")
-//                }
-//            }
-        
+
         ApiRequest.shared.getEventLogs(params: requestParams) { response, error in
             if let data = response {
                 let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.allSitesAssets
@@ -151,12 +109,10 @@ class EventNotificationViewController: UIViewController {
                     for targetAssetData in allSitesAssetsList {
                         for targetEventResult in data {
                             if targetEventResult.assetId == targetAssetData.id {
-//                                        print("호출 확인 3==== > targetEventResult.assetId : \(targetEventResult.assetId), targetAssetData.id : \(targetAssetData.id)")
                                 self.eventList.append(targetEventResult)
                             }
                         }
                     }
-                
                 if self.eventList != nil {
                     self.tableView.reloadData()
                 } else {
@@ -242,6 +198,7 @@ extension EventNotificationViewController: UITableViewDataSource, UITableViewDel
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("\(indexPath.row) 번 째 리스트 클릭 => id : \(self.eventList[indexPath.row].id)")
         
+        LoadingIndicator.shared.show()
         getEventVideoFileDownload(id: self.eventList[indexPath.row].id!, index: indexPath.row)
     }
     
@@ -311,41 +268,7 @@ extension EventNotificationViewController: UITableViewDataSource, UITableViewDel
 
     // event Video 파일 다운로드 api
     func getEventVideoFileDownload(id: Int, index: Int) {
-//        let url = "\(ApiUrl.baseDataApiUrl)event/download?eventId=\(id)"
-//        // HTTP 헤더
-//        let headers: HTTPHeaders = [
-//            "Authorization": "test"
-//        ] //"Content-Type": "application/json"
-////        
-//        Toaster.shared.makeToast("다운로드 시작...", .middle)
-//        LoadingIndicator.shared.show()
-//        AF.request(
-//            url,
-//            method: .get,
-//            encoding: JSONEncoding.default,
-//            headers: headers
-//        ).validate(statusCode: 200..<600)
-//            .response { response in
-//                switch response.result {
-//                    case .success(let data):
-//                        print("getEventVideoFileDownload ==> data : \(data)")
-////                        self.detectVideoFileDownload(data!, eventResult: self.eventList[index])
-//                            print("@@@@ eventVideoFileDownload : id = \(id),  index = \(index)")
-//                        self.saveToDownloads(data: data!, eventResult: self.eventList[index], viewController: self)
-//                    case .failure(let error):
-//                        print("getEventVideoFileDownload ==== > error : \(error)")
-//                        // 메인 스레드에서 UI 업데이트
-//                        DispatchQueue.main.async {
-//                            LoadingIndicator.shared.hide()
-//                        }
-//                        Toaster.shared.makeToast("다운로드 실패.", .short)
-//                }
-//                
-//            }
-//        
-
         ApiRequest.shared.getEventVideoFileDownload(id: id) { response, error in
-            
             if let data = response {
                 self.saveToDownloads(data: data, eventResult: self.eventList[index], viewController: self)
             } else {
@@ -356,7 +279,6 @@ extension EventNotificationViewController: UITableViewDataSource, UITableViewDel
                 Toaster.shared.makeToast("다운로드 실패.", .short)
             }
         }
-        
     }
     
     // 파일 저장하기
@@ -384,7 +306,7 @@ extension EventNotificationViewController: UITableViewDataSource, UITableViewDel
                 picker.modalPresentationStyle = .formSheet
                 viewController.present(picker, animated: true)
             }
-            
+            LoadingIndicator.shared.hide()
             Toaster.shared.makeToast("다운로드 완료", .short)
             
         } catch {

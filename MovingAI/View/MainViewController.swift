@@ -302,36 +302,9 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         
         // 로딩 시작
         LoadingIndicator.shared.show()
-        
-//        let headers: HTTPHeaders = [
-//            "Authorization": "test",
-//            "Accept": "application/json"
-//        ]
-//        
-//        // 통신
-//        
-//        AF.request(
-//            ApiUrl.baseApiUrl + "manage/deviceList",
-//            method: .get,
-//            headers: headers
-//        ).validate(statusCode: 200..<300) // 상태 코드 유효성 검증
-//            .responseDecodable(of: [NxCamDeviceInfo].self) { response in
-//                switch response.result {
-//                
-//                case .success(let value):
-////                    print("성공하였습니다 :: \(value)")
-//                    
-//                    self.onlineDeviceList = value
-//                    self.nxCamData.onlineDeviceList = value
-//                    
-//                case .failure(let error):
-//                    print("apiOnlineDevices - 실패하였습니다 :: \(error)" )
-//                }
-//            }
-        
+
         ApiRequest.shared.getOnlineDevice { (result, error) in
             if let result = result {
-//                print("성공하였습니다 :: \(result)")
                 self.onlineDeviceList = result
                 self.nxCamData.onlineDeviceList = result
             } else {
@@ -342,80 +315,20 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     
     func apiAllAssets() -> Void{
         print("apiAllAssets 호출 시작!")
-        
-//        let headers: HTTPHeaders = [
-//            "Authorization": "test",
-//            "Accept": "application/json"
-//        ]
-//        
-//        // 통신
-//        
-//        AF.request(
-//            ApiUrl.baseDataApiUrl + "asset/-1",
-//            method: .get,
-//            headers: headers
-//        ).validate(statusCode: 200..<300) // 상태 코드 유효성 검증
-//            .responseDecodable(of: [AssetData].self) { response in
-//                switch response.result {
-//                    
-//                case .success(let value):
-////                    print("성공하였습니다 :: \(value)")
-//                    self.allAssetDeviceList = value
-//                    self.nxCamData.allAssetDeviceList = value
-//                    
-//                case .failure(let error):
-//                    print("apiAllAssets - 실패하였습니다 :: \(error)" )
-//                }
-//            }
-        
         ApiRequest.shared.getAllAssets { (result, error) in
             if let result = result {
-//                print("성공하였습니다 :: \(result)")
                 self.allAssetDeviceList = result
                 self.nxCamData.allAssetDeviceList = result
             } else {
                 print("오류 발생: \(error?.localizedDescription ?? "알 수 없는 오류")")
             }
         }
-        
-        
-        
     }
     
     func apiAllSites() -> Void{
         print("apiAllSites 호출 시작!")
-        
-//        let headers: HTTPHeaders = [
-//            "Authorization": "test",
-//            "Accept": "application/json"
-//        ]
-//        
-//        // 통신
-//        
-//        AF.request(
-//            ApiUrl.baseDataApiUrl + "attach/-1",
-//            method: .get,
-//            headers: headers
-//        ).validate(statusCode: 200..<300) // 상태 코드 유효성 검증
-//            .responseDecodable(of: [AttachData].self) { response in
-//                switch response.result {
-//                
-//                case .success(let value):
-////                    print("성공하였습니다 :: \(value)")
-//                    self.allAttachList = value
-//                    self.nxCamData.allAttachList = value
-////                    print("allAttachList :: \(self.allAttachList)")
-//                    
-//                case .failure(let error):
-//                    print("apiAllSites - 실패하였습니다 :: \(error)" )
-//                    
-//                    
-//                }
-//            }
-        
         ApiRequest.shared.getAllSites { (result, error) in
             if let result = result {
-//                print("성공하였습니다 :: \(result)")
                 self.allAttachList = result
                 self.nxCamData.allAttachList = result
             } else {
@@ -426,45 +339,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     
     func apiGetAssetsData(id: Int){
         print("apiGetAssetsData 호출 시작!")
-        
-//        let headers: HTTPHeaders = [
-//            "Authorization": "test",
-//            "Accept": "application/json"
-//        ]
-//        
-//        let url = "\(ApiUrl.baseDataApiUrl)/asset/\(id)"
-//        
-//        // 통신
-//        
-//        AF.request(
-//            url,
-//            method: .get,
-//            headers: headers
-//        ).validate(statusCode: 200..<300) // 상태 코드 유효성 검증
-//            .responseDecodable(of: [AttachData].self) { response in
-//                switch response.result {
-//                
-//                case .success(let value):
-//                    print("성공하였습니다 :: \(value)")
-//                    // 첫 번째 AttachData만 사용
-//                    if let firstData = value.first,
-//                        let latitude = firstData.lat,
-//                        let longitude = firstData.lng {
-//                        
-//                        self.mapSetCenterFromGPS(lon: longitude, lat: latitude)
-//                        
-//                    } else {
-//                            print("장비의 위치정보가 없습니다.")
-//                    }
-//                    
-//                case .failure(let error):
-//                    print("apiAllSites - 실패하였습니다 :: \(error)" )
-//                    
-//                    
-//                }
-//            }
-        
-        
         ApiRequest.shared.getOneAssetsData(id: id) { (result, error) in
             if let result = result {
                 print("성공하였습니다 :: \(result)")
@@ -474,7 +348,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     let longitude = firstData.lng {
                     
                     self.mapSetCenterFromGPS(lon: longitude, lat: latitude)
-                    
                 } else {
                         print("장비의 위치정보가 없습니다.")
                 }
@@ -487,7 +360,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     func siteAssetsCheck() {
         // 계정 현장 타입별 조회가 필요한 현장 리스트
         let attachType = userAccount.attachType
-//        let id = userAccount.id
         let id = userAccount.attachId
         
         print("MainVC settingData attachType : \(attachType)")
@@ -498,10 +370,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 switch (attachType) {
                     // 회사 계정
                     case "Company":
-        //            print("settingData ===> 1, allAttachList : \(allAttachList) ")
-
-                    for targetContractor in self.allAttachList {
-//                        print("settingData ===> 2, targetContractor.parentId : \(targetContractor.parentId) ")
+                        for targetContractor in self.allAttachList {
                             // 계정 company 아래에 있는 contractor 조회
                             if let parentId = targetContractor.parentId, parentId == id {
 //                                print("settingData 같은 아이디 있다!!")
@@ -510,17 +379,16 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                                     if let siteParentId = targetSite.parentId, siteParentId == targetContractor.id {
                                         self.userAccessibleAllSitesList.append(targetSite)
 //                                        print("settingData ===> 3, Company, siteParentId : \(siteParentId) ")
+                                        }
                                     }
                                 }
                             }
-                        }
                     
                         // 현장 전체 장비 리스트
                     for targerAsset in self.allAssetDeviceList {
                         for accessibleSites in self.userAccessibleAllSitesList {
                                 if let attachId = targerAsset.attach?.id, attachId == accessibleSites.id {
                                     self.allSiteAssetList.append(targerAsset)
-//                                    print("settingData ===> Company, attachId : \(attachId) ")
                                 }
                             }
                         }
@@ -533,7 +401,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     for targetSite in self.allAttachList {
                             if let parentId = targetSite.parentId, parentId == id {
                                 self.userAccessibleAllSitesList.append(targetSite)
-//                                print("settingData ===> Contractor, parentId : \(parentId) ")
                             }
                         }
                     
@@ -542,37 +409,26 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                         for accessibleSites in self.userAccessibleAllSitesList {
                                 if let attachId = targerAsset.attach?.id, attachId == accessibleSites.id {
                                     self.allSiteAssetList.append(targerAsset)
-//                                    print("settingData ===> Contractor, attachId : \(attachId) ")
                                 }
                             }
                         }
                     
                         // 온라인 장비 중 계정 현장에 해당하는 장비 리스트
                     self.checkOnlineDeviceList()
-                        
                     
                     case "Site":
-        //                    userAccessibleAllSitesList.append(userAccount)
-                    
                     for targetAsset in self.allAssetDeviceList {
                             if let attachId = targetAsset.attach?.id, attachId == id {
                                 self.allSiteAssetList.append(targetAsset)
-//                                print("settingData ===> Site, attachId : \(attachId) ")
                             }
                         }
                         
                         // 온라인 장비 중 계정 현장에 해당하는 장비 리스트
                     self.checkOnlineDeviceList()
                         
-                    
                     default:
                         break
                 }
-                
-                // 계정에 허용된 현장 리스트 저장
-                //
-                // 현장들 전체 장비 리스트 저장
-                //
                 
                 // 현장 온라인장비 저장
                 self.nxCamData.deviceInfoList.append(contentsOf: self.onlineSiteAssetList)
@@ -609,7 +465,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             for targetSiteAsset in allSiteAssetList {
                 if let sessionId = Int(targetOnlineDevice.sessionId), sessionId == targetSiteAsset.id {
                     // 온라인 장비 api의 "장비 이름" 말고 장비 정보 api의 "장비 이름" 입력
-//                    targetOnlineDevice.set
                     print("checkOnlineDeviceList ==> targetSiteAsset.name : \(String(describing: targetSiteAsset.name)) ")
                     onlineSiteAssetList.append(targetOnlineDevice)
                     // 드롭다운 리스트
