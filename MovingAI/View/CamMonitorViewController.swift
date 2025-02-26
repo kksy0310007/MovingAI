@@ -553,14 +553,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         
         setMonitorButtonsViewFlag()
         
-        
-        
-        
-        // 7. 장비 리스트
-        // 8. 음성 송출 팝업 view
-        // 9. 안내방송 팝업 view
-        
-        
     }
     
     private func initControllerView() {
@@ -1009,6 +1001,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         patrolOff()
     }
     
+    // 8. 음성 송출 팝업 view
     @objc func didTapMicView() {
         print("select didTapMicView")
         
@@ -1018,10 +1011,9 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         micPopupVC.modalTransitionStyle = .crossDissolve
         present(micPopupVC, animated: true)
         
-        
-        
     }
     
+    // 9. 안내방송 팝업 view
     @objc func didTapPlayView() {
         print("select didTapPlayView")
 
@@ -1088,6 +1080,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         imageViewPlayerZoomOut()
     }
     
+    // 7. 장비 리스트
     @objc func handlePanGesture(gesture:UIPanGestureRecognizer) {
         
         let translation = gesture.translation(in: sheet)
@@ -1147,57 +1140,81 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         ]
         
         if let sessionId = selectedDeviceData?.sessionId {
-            let url = "nxcamPatrol/\(sessionId)/true"
+//            let url = "nxcamPatrol/\(sessionId)/true"
+//            
+//            AF.request(
+//                ApiUrl.baseDataApiUrl + url,
+//                method: .put,
+//                headers: headers
+//            ).validate(statusCode: 200..<300)
+//                .response { response in
+//                    switch response.result {
+//                        case .success(let data):
+//                            print("patrolOn ==== > data : \(data)")
+//                            Toaster.shared.makeToast("패트롤 ON", .short)
+//                            
+//                        case .failure(let error):
+//                            print("patrolOn ==== > error : \(error)")
+//                    }
+//            }
             
-            AF.request(
-                baseDataApiUrl + url,
-                method: .put,
-                headers: headers
-            ).validate(statusCode: 200..<300)
-                .response { response in
-                    switch response.result {
-                        case .success(let data):
-                            print("patrolOn ==== > data : \(data)")
-                            Toaster.shared.makeToast("패트롤 ON", .short)
-                            
-                        case .failure(let error):
-                            print("patrolOn ==== > error : \(error)")
-                    }
+            ApiRequest.shared.setPatrolOn(sessionId: sessionId) { response, error in
+                
+                if response {
+                    print("patrolOn ==== > data : \(response)")
+                    Toaster.shared.makeToast("패트롤 ON", .short)
+                } else {
+                    print("patrolOn ==== > error : \(error)")
+                }
+                
             }
-            
+        
         } else {
             print("sessionId가 nil입니다.")
         }
+        
     }
     
     func patrolOff() {
         
         LoadingIndicator.shared.show()
         
-        let headers: HTTPHeaders = [
-            "Authorization": "test",
-            "Accept": "application/json"
-        ]
+//        let headers: HTTPHeaders = [
+//            "Authorization": "test",
+//            "Accept": "application/json"
+//        ]
         
         if let sessionId = selectedDeviceData?.sessionId {
-            let url = "nxcamPatrol/\(sessionId)/false"
-            
-            AF.request(
-                baseDataApiUrl + url,
-                method: .put,
-                headers: headers
-            ).validate(statusCode: 200..<300)
-                .response { response in
-                    
-                    switch response.result {
-                        case .success(let data):
-                        print("patrolOn ==== > data : \(data)")
-                            Toaster.shared.makeToast("패트롤 OFF", .middle)
-                            
-                        case .failure(let error):
-                            print("patrolOn ==== > error : \(error)")
-                    }
+//            let url = "nxcamPatrol/\(sessionId)/false"
+//            
+//            AF.request(
+//                ApiUrl.baseDataApiUrl + url,
+//                method: .put,
+//                headers: headers
+//            ).validate(statusCode: 200..<300)
+//                .response { response in
+//                    
+//                    switch response.result {
+//                        case .success(let data):
+//                        print("patrolOn ==== > data : \(data)")
+//                            Toaster.shared.makeToast("패트롤 OFF", .middle)
+//                            
+//                        case .failure(let error):
+//                            print("patrolOn ==== > error : \(error)")
+//                    }
+//            }
+        
+            ApiRequest.shared.setPatrolOff(sessionId: sessionId) { response, error in
+                
+                if response {
+                    print("patrolOff ==== > data : \(response)")
+                    Toaster.shared.makeToast("패트롤 OFF", .middle)
+                } else {
+                    print("patrolOff ==== > error : \(error)")
+                }
+                
             }
+            
         } else {
             print("sessionId가 nil입니다.")
         }
@@ -1217,21 +1234,27 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         // 로딩 시작
 //        LoadingIndicator.shared.show()
         
-        let headers: HTTPHeaders = [
-            "Authorization": "test",
-            "Accept": "application/json"
-        ]
+//        let headers: HTTPHeaders = [
+//            "Authorization": "test",
+//            "Accept": "application/json"
+//        ]
+//        
+//        var url = "control/ptz/\(session)/\(direction)"
+//        
+//        AF.request(
+//            ApiUrl.baseApiUrl + url,
+//            method: .get,
+//            headers: headers
+//        ).validate(statusCode: 200..<300)
+//            .response { response in
+//                print("camRotateControl ==== > session : \(session), direction : \(direction) , response : \(response)")
+//            }
         
-        var url = "control/ptz/\(session)/\(direction)"
-        
-        AF.request(
-            baseApiUrl + url,
-            method: .get,
-            headers: headers
-        ).validate(statusCode: 200..<300)
-            .response { response in
-                print("camRotateControl ==== > session : \(session), direction : \(direction) , response : \(response)")
+        ApiRequest.shared.setCamRotateControl(session: session, direction: direction) { response, error in
+            if response {
+                print("camRotateControl ==== > session : \(session), direction : \(direction) , response : true")
             }
+        }
     }
     
     func connectVideoSocket(channel: String) {
@@ -1323,108 +1346,165 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     // 안내방송 리스트 통신으로 가져옴
     private func initPresetVoiceData() {
         // 완성된 URL
-        let url = "\(baseDataApiUrl)/preset"
+//        let url = "\(ApiUrl.baseDataApiUrl)/preset"
                 
         // HTTP 헤더
-        let headers: HTTPHeaders = [
-            "Authorization": "test",
-            "Accept": "application/json"
-        ]
+//        let headers: HTTPHeaders = [
+//            "Authorization": "test",
+//            "Accept": "application/json"
+//        ]
         
-        AF.request(
-            url,
-            method: .get,
-            headers: headers
-        ).validate(statusCode: 200..<300)
-            .responseDecodable(of: [PresetManageData].self) { response in
-                switch response.result {
+//        AF.request(
+//            url,
+//            method: .get,
+//            headers: headers
+//        ).validate(statusCode: 200..<300)
+//            .responseDecodable(of: [PresetManageData].self) { response in
+//                switch response.result {
+//                
+//                case .success(let value):
+//                    print("initPresetVoiceData 성공하였습니다 ")
+//                    self.presetServerDataList = value
+//                    
+//                    var targetData: [String]?
+//                    
+//                    // 웹 리스트 COMPARE 장비 아이디
+//                    for data in self.presetServerDataList ?? [] {
+//                            targetData = data.applyNxCam.split(separator: "|").map { String($0) }
+//                            
+//                            if let targetData = targetData {
+//                                for deviceId in targetData {
+//                                    if let deviceSession = Int(NxCamMethods.shared.selectedDeviceInfo?.sessionId ?? ""),
+//                                       let presetDeviceSession = Int(deviceId) {
+//                                        // 켜진 장비 세션값 vs 프리셋이 적용된 장비 세션값
+//                                        if deviceSession == presetDeviceSession {
+//                                            self.devicePresetList.append(data)
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    
+//                    print("initPresetVoiceData 성공하였습니다 devicePresetList :: \(self.devicePresetList)")
+//                    self.getPresetVoiceData()
+//                    
+//                case .failure(let error):
+//                    print("initPresetVoiceData - 실패하였습니다 :: \(error)" )
+//                    
+//                }
+//        }
+        
+        ApiRequest.shared.getPresetVoiceData { (result, error) in
+            if let result = result {
+                print("성공하였습니다 :: \(result)")
+                self.presetServerDataList = result
                 
-                case .success(let value):
-                    print("initPresetVoiceData 성공하였습니다 ")
-                    self.presetServerDataList = value
-                    
-                    var targetData: [String]?
-                    
-                    // 웹 리스트 COMPARE 장비 아이디
-                    for data in self.presetServerDataList ?? [] {
-                            targetData = data.applyNxCam.split(separator: "|").map { String($0) }
-                            
-                            if let targetData = targetData {
-                                for deviceId in targetData {
-                                    if let deviceSession = Int(NxCamMethods.shared.selectedDeviceInfo?.sessionId ?? ""),
-                                       let presetDeviceSession = Int(deviceId) {
-                                        // 켜진 장비 세션값 vs 프리셋이 적용된 장비 세션값
-                                        if deviceSession == presetDeviceSession {
-                                            self.devicePresetList.append(data)
-                                        }
+                var targetData: [String]?
+                
+                // 웹 리스트 COMPARE 장비 아이디
+                for data in self.presetServerDataList ?? [] {
+                        targetData = data.applyNxCam.split(separator: "|").map { String($0) }
+                        
+                        if let targetData = targetData {
+                            for deviceId in targetData {
+                                if let deviceSession = Int(NxCamMethods.shared.selectedDeviceInfo?.sessionId ?? ""),
+                                   let presetDeviceSession = Int(deviceId) {
+                                    // 켜진 장비 세션값 vs 프리셋이 적용된 장비 세션값
+                                    if deviceSession == presetDeviceSession {
+                                        self.devicePresetList.append(data)
                                     }
                                 }
                             }
                         }
-                    
-                    print("initPresetVoiceData 성공하였습니다 devicePresetList :: \(self.devicePresetList)")
-                    self.getPresetVoiceData()
-                    
-                case .failure(let error):
-                    print("initPresetVoiceData - 실패하였습니다 :: \(error)" )
-                    
-                }
+                    }
+                
+                print("initPresetVoiceData 성공하였습니다 devicePresetList :: \(self.devicePresetList)")
+                self.getPresetVoiceData()
+            } else {
+                print("오류 발생: \(error?.localizedDescription ?? "알 수 없는 오류")")
+            }
         }
         
     }
     
     // 장비에 있는 프리셋 폴더 파일 리스트
     private func getPresetVoiceData() {
-        // 완성된 URL
-        let url = "\(baseApiUrl)manage/fileList"
-                
-        // HTTP 헤더
-        let headers: HTTPHeaders = [
-            "Authorization": "test",
-            "Accept": "application/json"
-        ]
+//        // 완성된 URL
+//        let url = "\(ApiUrl.baseApiUrl)manage/fileList"
+//                
+//        // HTTP 헤더
+//        let headers: HTTPHeaders = [
+//            "Authorization": "test",
+//            "Accept": "application/json"
+//        ]
+//        
+//        let parameters: Parameters = [
+//               "filename": "",
+//               "path": "PRESET",
+//               "sessionId": selectedDeviceData?.sessionId ?? ""
+//        ]
+//        
+//        AF.request(
+//            url,
+//            method: .get,
+//            parameters: parameters,
+//            encoding: URLEncoding.queryString,
+//            headers: headers
+//        ).validate(statusCode: 200..<300)
+//            .responseDecodable(of: [PresetData].self) { response in
+//                switch response.result {
+//                case .success(let value):
+//                    print("getPresetVoiceData 성공하였습니다")
+//                    
+//                    if !value.isEmpty {
+//                        // 장비 파일 리스트와 매칭 완료된 프리셋 리스트 필터링
+//                        for presetFile in value {
+//                            for presetModel in self.devicePresetList {
+//                                if presetFile.fileName == presetModel.oriFilename {
+//                                    self.presetDataList.append(presetFile)
+//                                }
+//                            }
+//                        }
+//                        print("getPresetVoiceData presetDataList: \(self.presetDataList)")
+//                        
+//                    } else {
+//                        // 값 업음
+//                        Toaster.shared.makeToast("안내방송이 존재하지 않습니다.")
+//                    }
+//                    
+//                case .failure(let error):
+//                    print("getPresetVoiceData - 실패하였습니다 :: \(error)" )
+//                    
+//                }
+//        }
         
-        let parameters: Parameters = [
-               "filename": "",
-               "path": "PRESET",
-               "sessionId": selectedDeviceData?.sessionId ?? ""
-        ]
         
-        AF.request(
-            url,
-            method: .get,
-            parameters: parameters,
-            encoding: URLEncoding.queryString,
-            headers: headers
-        ).validate(statusCode: 200..<300)
-            .responseDecodable(of: [PresetData].self) { response in
-                switch response.result {
-                case .success(let value):
-                    print("getPresetVoiceData 성공하였습니다")
-                    
-                    if !value.isEmpty {
-                        // 장비 파일 리스트와 매칭 완료된 프리셋 리스트 필터링
-                        for presetFile in value {
-                            for presetModel in self.devicePresetList {
-                                if presetFile.fileName == presetModel.oriFilename {
-                                    self.presetDataList.append(presetFile)
-                                }
+        
+        ApiRequest.shared.getPresetVoiceDeviceData(sessionId: selectedDeviceData?.sessionId ?? "") { (result, error) in
+            if let result = result {
+                print("성공하였습니다 :: \(result)")
+                if !result.isEmpty {
+                    // 장비 파일 리스트와 매칭 완료된 프리셋 리스트 필터링
+                    for presetFile in result {
+                        for presetModel in self.devicePresetList {
+                            if presetFile.fileName == presetModel.oriFilename {
+                                self.presetDataList.append(presetFile)
                             }
                         }
-                        print("getPresetVoiceData presetDataList: \(self.presetDataList)")
-                        
-                    } else {
-                        // 값 업음
-                        Toaster.shared.makeToast("안내방송이 존재하지 않습니다.")
                     }
+                    print("getPresetVoiceData presetDataList: \(self.presetDataList)")
                     
-                case .failure(let error):
-                    print("getPresetVoiceData - 실패하였습니다 :: \(error)" )
-                    
+                } else {
+                    // 값 업음
+                    Toaster.shared.makeToast("안내방송이 존재하지 않습니다.")
                 }
+                
+            } else {
+                print("오류 발생: \(error?.localizedDescription ?? "알 수 없는 오류")")
+            }
         }
-        
     }
+    
 }
 
 extension CamMonitorViewController: WebSocketDelegate {
@@ -1507,72 +1587,91 @@ extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, BottomSheet
         if let fileName = presetDataList[position].fileName {
             let fileNameParts = fileName.split(separator: ".")
             if let firstPart = fileNameParts.first {
-                let targetURL = "control/preset/\(NxCamMethods.shared.selectedDeviceInfo?.sessionId ?? "")/\(firstPart)"
+                let targetURL = "\(NxCamMethods.shared.selectedDeviceInfo?.sessionId ?? "")/\(firstPart)"
                 print("Target URL: \(targetURL)")
                 
-                // HTTP 헤더
-                let headers: HTTPHeaders = [
-                    "Authorization": "test",
-                    "Accept": "application/json"
-                ]
+//                // HTTP 헤더
+//                let headers: HTTPHeaders = [
+//                    "Authorization": "test",
+//                    "Accept": "application/json"
+//                ]
                 
                 
-                AF.request(
-                    baseApiUrl + targetURL,
-                    method: .get,
-                    headers: headers
-                ).validate(statusCode: 200..<300)
-                    .response { response in
-                        switch response.result {
-                            case .success(let data):
-                                print("playPresetVoice ==== > success data : \(data)")
-                                self.broadcastHistoryCreate(apiType: "VOICEMSG", eventKind: "")
-                            case .failure(let error):
-                                print("playPresetVoice ==== > error : \(error)")
-                        }
-                        
+                
+//                AF.request(
+//                    ApiUrl.baseApiUrl + targetURL,
+//                    method: .get,
+//                    headers: headers
+//                ).validate(statusCode: 200..<300)
+//                    .response { response in
+//                        switch response.result {
+//                            case .success(let data):
+//                                print("playPresetVoice ==== > success data : \(data)")
+//                                self.broadcastHistoryCreate(apiType: "VOICEMSG", eventKind: "")
+//                            case .failure(let error):
+//                                print("playPresetVoice ==== > error : \(error)")
+//                        }
+//                        
+//                    }
+                
+                
+                ApiRequest.shared.getPlayPresetVoice(targetURL: targetURL) { (result, error) in
+                    if result {
+                        self.broadcastHistoryCreate(apiType: "VOICEMSG", eventKind: "")
                     }
-
+                }
             }
         }
     }
     
     // 방송 전파이력 생성
     private func broadcastHistoryCreate(apiType: String, eventKind: String) {
-        let url = baseDataApiUrl + "broadcastHistory/create"
-        
-        // HTTP 헤더
-        let headers: HTTPHeaders = [
-            "Authorization": "test",
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        ]
-        
-        // 요청 파라미터
-        let parameters: [String: Any] = [
-            "id": Int(selectedDeviceData?.sessionId ?? "0"),
-            "apiType": apiType,
-            "eventKind": eventKind,
-            "userId": UserAccountMethods.shared.movingAIUserAccount?.userId ?? ""
-        ]
+//        let url = ApiUrl.baseDataApiUrl + "broadcastHistory/create"
+//        
+//        // HTTP 헤더
+//        let headers: HTTPHeaders = [
+//            "Authorization": "test",
+//            "Content-Type": "application/json",
+//            "Accept": "application/json"
+//        ]
+//        
+//        // 요청 파라미터
+//        let parameters: [String: Any] = [
+//            "id": Int(selectedDeviceData?.sessionId ?? "0"),
+//            "apiType": apiType,
+//            "eventKind": eventKind,
+//            "userId": UserAccountMethods.shared.movingAIUserAccount?.userId ?? ""
+//        ]
 
-        AF.request(
-            url,
-            method: .post,
-            parameters: parameters,
-            encoding: JSONEncoding.default,
-            headers: headers
-        ).validate(statusCode: 200..<300)
-            .response { response in
-                switch response.result {
-                    case .success(let data):
-                        print("broadcastHistoryCreate ==== > success data : \(data)")
-
-                    case .failure(let error):
-                        print("broadcastHistoryCreate ==== > error : \(error)")
-                }
-                
+//        AF.request(
+//            url,
+//            method: .post,
+//            parameters: parameters,
+//            encoding: JSONEncoding.default,
+//            headers: headers
+//        ).validate(statusCode: 200..<300)
+//            .response { response in
+//                switch response.result {
+//                    case .success(let data):
+//                        print("broadcastHistoryCreate ==== > success data : \(data)")
+//
+//                    case .failure(let error):
+//                        print("broadcastHistoryCreate ==== > error : \(error)")
+//                }
+//                
+//            }
+        
+        ApiRequest.shared.setBroadcastHistoryCreate(sessionId:selectedDeviceData?.sessionId ?? "0", apiType: apiType, eventKind: eventKind) { (result, error) in
+            
+            if result == true {
+                print("broadcastHistoryCreate ==== > success ")
+            } else {
+                print("broadcastHistoryCreate ==== > error : \(error)")
             }
+
+        }
+        
+        
     }
     
     func micButtonTouchDown() {

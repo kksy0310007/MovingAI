@@ -33,6 +33,7 @@ class LoginViewController: UIViewController {
 //    var testId = "YS-HDBD"
 //    var testPW = "123qwe"
     
+    
     // GS 상도
 //    var testId = "YS-GSSD"
 //    var testPW = "123qwe"
@@ -45,7 +46,7 @@ class LoginViewController: UIViewController {
 //    var testId = "YS-DWKJ"
 //    var testPW = "123qwe"
     
-    // 현대 잠실 주경기장
+//    // 현대 잠실 주경기장
 //    var testId = "hdjs00"
 //    var testPW = "123qwe"
     
@@ -359,48 +360,81 @@ class LoginViewController: UIViewController {
         
         let authorizationHeader = "test"
                 
-        // 완성된 URL
-        let url = "\(loginApiUrl)\(encodeUserName)/\(encodePW)"
+//        // 완성된 URL
+//        let url = "\(ApiUrl.loginApiUrl)\(encodeUserName)/\(encodePW)"
+//                
+//        // HTTP 헤더
+//        let headers: HTTPHeaders = [
+//            "Authorization": authorizationHeader,
+//            "Accept": "application/json"
+//        ]
+//        print("url :: \(url)")
+//        // 통신
+//         AF.request(url, method: .get, headers: headers)
+//             .validate(statusCode: 200..<300)
+//             .responseDecodable(of: MovingAiUserAccount.self) { response in
+//                 switch response.result {
+//                 case .success(let value):
+////                     print("성공하였습니다 :: \(value)")
+//                     
+//                     if (self.isAutoLogin) {
+//                         UserDefaults.standard.set(encodeUserName ?? "", forKey: "id")
+//                         UserDefaults.standard.set(encodePW ?? "",forKey: "pwd")
+//                         UserDefaults.standard.set(true,forKey: "isAutoLogin")
+//                     }
+//                     
+//                    // 싱클톤으로 값 저장
+//                     self.userAccount.name = encodeUserName ?? ""
+//                     self.userAccount.isAutoLogin = self.isAutoLogin
+//                     self.userAccount.movingAIUserAccount = value
+//                     self.userAccount.id = value.id
+//                     
+//                     self.userAccount.attachId = value.attach.id
+//                     self.userAccount.attachType = value.attach.attachType ?? "Company"
+//                     self.userAccount.title = value.attach.name
+//                    
+//                    // 화면 이동
+//                     DispatchQueue.main.async {
+//                        self.updateUI()
+//                    }
+//                     
+//                     
+//                 case .failure(let error):
+//                     print("실패하였습니다 :: \(error)" )
+//                     self.errorLabel.text = "일치하는 회원정보가 없습니다."
+//                     self.errorLabel.isHidden = false
+//                 }
+//             }
+        
+        ApiRequest.shared.loginAttempt(encUserName: encodeUserName, encPassword: encodePW) { response, error in
+            
+            if let userAccount = response {
+                if (self.isAutoLogin) {
+                    UserDefaults.standard.set(encodeUserName, forKey: "id")
+                    UserDefaults.standard.set(encodePW,forKey: "pwd")
+                    UserDefaults.standard.set(true,forKey: "isAutoLogin")
+                }
                 
-        // HTTP 헤더
-        let headers: HTTPHeaders = [
-            "Authorization": authorizationHeader,
-            "Accept": "application/json"
-        ]
-        print("url :: \(url)")
-        // 통신
-         AF.request(url, method: .get, headers: headers)
-             .validate(statusCode: 200..<300)
-             .responseDecodable(of: MovingAiUserAccount.self) { response in
-                 switch response.result {
-                 case .success(let value):
-//                     print("성공하였습니다 :: \(value)")
-                     
-                     if (self.isAutoLogin) {
-                         UserDefaults.standard.set(encodeUserName, forKey: "id")
-                         UserDefaults.standard.set(encodePW,forKey: "pwd")
-                         UserDefaults.standard.set(true,forKey: "isAutoLogin")
-                     }
-                     
-                    // 싱클톤으로 값 저장
-                     self.userAccount.name = encodeUserName
-                     self.userAccount.isAutoLogin = self.isAutoLogin
-                     self.userAccount.movingAIUserAccount = value
-                     self.userAccount.id = value.id
-                     self.userAccount.attachId = value.attach.id
-                     self.userAccount.attachType = value.attach.attachType ?? "Company"
-                     self.userAccount.title = value.attach.name
-                    
-                    // 화면 이동
-                     self.updateUI()
-                     
-                     
-                 case .failure(let error):
-                     print("실패하였습니다 :: \(error)" )
-                     self.errorLabel.text = "일치하는 회원정보가 없습니다."
-                     self.errorLabel.isHidden = false
-                 }
-             }
+               // 싱클톤으로 값 저장
+                self.userAccount.name = encodeUserName
+                self.userAccount.isAutoLogin = self.isAutoLogin
+                self.userAccount.movingAIUserAccount = userAccount
+                self.userAccount.id = userAccount.id
+                self.userAccount.attachId = userAccount.attach.id
+                self.userAccount.attachType = userAccount.attach.attachType ?? "Company"
+                self.userAccount.title = userAccount.attach.name
+               
+               // 화면 이동
+                DispatchQueue.main.async {
+                    self.updateUI()
+                }
+                
+            } else {
+                print("실패하였습니다 :: \(error)" )
+                self.errorLabel.text = "일치하는 회원정보가 없습니다."
+                self.errorLabel.isHidden = false
+            }
+        }
     }
     
     func updateUI() {

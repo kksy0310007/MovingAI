@@ -7,13 +7,6 @@
 
 import UIKit
 
-
-var loginApiUrl: String = "https://moving-ai.com/outside/" // 로그인
-
-var baseApiUrl: String = "https://platform.moving-ai.com/api/v1/" // 장비에서 바로 가져오는 데이터 (카메라 회전, 실시간 영상, 음성파일, 현재 켜져있는 모든 장비 리스트 등)
-var baseDataApiUrl: String = "https://moving-ai.com/api/v1/" // 그 외 서버에서 가져오는 데이터 (현장 별 장비 리스트 등)
-
-
 class NxCamMethods {
     
     static let shared = NxCamMethods()
@@ -38,8 +31,6 @@ class NxCamMethods {
     
     // 선택한 장비  정보
     var selectedDeviceInfo: NxCamDeviceInfo? = nil
-    
-    
     
     
     func getDeviceInfoList() -> [NxCamDeviceInfo] {

@@ -99,7 +99,7 @@ class EventNotificationViewController: UIViewController {
     
     // 감지 이벤트 목록 api 호출
     func getEventLogsApi() {
-        let url = "\(baseDataApiUrl)event"
+        let url = "\(ApiUrl.baseDataApiUrl)event"
         // HTTP 헤더
         let headers: HTTPHeaders = [
             "Authorization": "test",
@@ -111,38 +111,61 @@ class EventNotificationViewController: UIViewController {
         
         self.eventList.removeAll()
         
-        AF.request(
-            url,
-            method: .post,
-            parameters: requestParams,
-            encoding: JSONEncoding.default,
-            headers: headers
-        ).validate(statusCode: 200..<600)
-            .responseDecodable(of: [EventResult].self) { response in
-                switch response.result {
-                    case .success(let data):
-//                        print("감지 이벤트 목록 api 호출 getEventLogsApi ==== > success data : \(data)")
-
-                        let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.allSitesAssets
-                    
-                            for targetAssetData in allSitesAssetsList {
-                                for targetEventResult in data {
-                                    if targetEventResult.assetId == targetAssetData.id {
+//        AF.request(
+//            url,
+//            method: .post,
+//            parameters: requestParams,
+//            encoding: JSONEncoding.default,
+//            headers: headers
+//        ).validate(statusCode: 200..<600)
+//            .responseDecodable(of: [EventResult].self) { response in
+//                switch response.result {
+//                    case .success(let data):
+////                        print("감지 이벤트 목록 api 호출 getEventLogsApi ==== > success data : \(data)")
+//
+//                        let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.allSitesAssets
+//                    
+//                            for targetAssetData in allSitesAssetsList {
+//                                for targetEventResult in data {
+//                                    if targetEventResult.assetId == targetAssetData.id {
+////                                        print("호출 확인 3==== > targetEventResult.assetId : \(targetEventResult.assetId), targetAssetData.id : \(targetAssetData.id)")
+//                                        self.eventList.append(targetEventResult)
+//                                    }
+//                                }
+//                            }
+//                        
+//                        if self.eventList != nil {
+//                            self.tableView.reloadData()
+//                        } else {
+//                            Toaster.shared.makeToast("이벤트가 존재하지 않습니다.", .short)
+//                        }
+//                    case .failure(let error):
+//                        print("getEventLogsApi ==== > error : \(error)")
+//                }
+//            }
+        
+        ApiRequest.shared.getEventLogs(params: requestParams) { response, error in
+            if let data = response {
+                let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.allSitesAssets
+            
+                    for targetAssetData in allSitesAssetsList {
+                        for targetEventResult in data {
+                            if targetEventResult.assetId == targetAssetData.id {
 //                                        print("호출 확인 3==== > targetEventResult.assetId : \(targetEventResult.assetId), targetAssetData.id : \(targetAssetData.id)")
-                                        self.eventList.append(targetEventResult)
-                                    }
-                                }
+                                self.eventList.append(targetEventResult)
                             }
-                        
-                        if self.eventList != nil {
-                            self.tableView.reloadData()
-                        } else {
-                            Toaster.shared.makeToast("이벤트가 존재하지 않습니다.", .short)
                         }
-                    case .failure(let error):
-                        print("getEventLogsApi ==== > error : \(error)")
+                    }
+                
+                if self.eventList != nil {
+                    self.tableView.reloadData()
+                } else {
+                    Toaster.shared.makeToast("이벤트가 존재하지 않습니다.", .short)
                 }
+            } else {
+                print("getEventLogsApi ==== > error : \(error)")
             }
+        }
     }
     
     // 필터 값을 받아서 JSON 파라미터를 만드는 함수
@@ -288,73 +311,53 @@ extension EventNotificationViewController: UITableViewDataSource, UITableViewDel
 
     // event Video 파일 다운로드 api
     func getEventVideoFileDownload(id: Int, index: Int) {
-        let url = "\(baseDataApiUrl)event/download?eventId=\(id)"
-        // HTTP 헤더
-        let headers: HTTPHeaders = [
-            "Authorization": "test"
-        ] //"Content-Type": "application/json"
-        
-        Toaster.shared.makeToast("다운로드 시작...", .middle)
-        LoadingIndicator.shared.show()
-        AF.request(
-            url,
-            method: .get,
-            encoding: JSONEncoding.default,
-            headers: headers
-        ).validate(statusCode: 200..<600)
-            .response { response in
-                switch response.result {
-                    case .success(let data):
-                        print("getEventVideoFileDownload ==> data : \(data)")
-//                        self.detectVideoFileDownload(data!, eventResult: self.eventList[index])
-                        self.saveToDownloads(data: data!, eventResult: self.eventList[index], viewController: self)
-                    case .failure(let error):
-                        print("getEventVideoFileDownload ==== > error : \(error)")
-                        // 메인 스레드에서 UI 업데이트
-                        DispatchQueue.main.async {
-                            LoadingIndicator.shared.hide()
-                        }
-                        Toaster.shared.makeToast("다운로드 실패.", .short)
-                }
-                
-            }
-    }
-    
-    // 파일 저장하기
-//    func detectVideoFileDownload(_ data: Data, eventResult: EventResult) {
-//        do {
-//            // 저장할 폴더 경로
-//            let fileManager = FileManager.default
-//            let folderName = "ai_event_detect"
-//            let folderURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(folderName)
-//            
-//            // 폴더가 없으면 생성
-//            if !fileManager.fileExists(atPath: folderURL.path) {
-//                try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
-//            }
-//            
-//            // 파일명 설정
-//            let regDate = eventResult.regDate?.split(separator: " ")[0]
-//            let regTime = eventResult.regDate?.split(separator: " ")[1].replacingOccurrences(of: ":", with: "_")
-//            
-//           
-//            if let date = regDate, let time = regTime, let name = eventResult.eventName {
-//                let fileName = "\(date) \(time) \(name).mp4"
-//                let fileURL = folderURL.appendingPathComponent(fileName)
-//                
-//                // 데이터 쓰기
-//                try data.write(to: fileURL)
-//                
-//                // 다운로드 완료 알림
-//                DispatchQueue.main.async {
-//                    print("다운로드 완료: \(fileURL.path)")
+//        let url = "\(ApiUrl.baseDataApiUrl)event/download?eventId=\(id)"
+//        // HTTP 헤더
+//        let headers: HTTPHeaders = [
+//            "Authorization": "test"
+//        ] //"Content-Type": "application/json"
+////        
+//        Toaster.shared.makeToast("다운로드 시작...", .middle)
+//        LoadingIndicator.shared.show()
+//        AF.request(
+//            url,
+//            method: .get,
+//            encoding: JSONEncoding.default,
+//            headers: headers
+//        ).validate(statusCode: 200..<600)
+//            .response { response in
+//                switch response.result {
+//                    case .success(let data):
+//                        print("getEventVideoFileDownload ==> data : \(data)")
+////                        self.detectVideoFileDownload(data!, eventResult: self.eventList[index])
+//                            print("@@@@ eventVideoFileDownload : id = \(id),  index = \(index)")
+//                        self.saveToDownloads(data: data!, eventResult: self.eventList[index], viewController: self)
+//                    case .failure(let error):
+//                        print("getEventVideoFileDownload ==== > error : \(error)")
+//                        // 메인 스레드에서 UI 업데이트
+//                        DispatchQueue.main.async {
+//                            LoadingIndicator.shared.hide()
+//                        }
+//                        Toaster.shared.makeToast("다운로드 실패.", .short)
 //                }
+//                
 //            }
-//            
-//        } catch {
-//            print("파일 저장 실패: \(error.localizedDescription)")
-//        }
-//    }
+//        
+
+        ApiRequest.shared.getEventVideoFileDownload(id: id) { response, error in
+            
+            if let data = response {
+                self.saveToDownloads(data: data, eventResult: self.eventList[index], viewController: self)
+            } else {
+                // 메인 스레드에서 UI 업데이트
+                DispatchQueue.main.async {
+                    LoadingIndicator.shared.hide()
+                }
+                Toaster.shared.makeToast("다운로드 실패.", .short)
+            }
+        }
+        
+    }
     
     // 파일 저장하기
     func saveToDownloads(data: Data, eventResult: EventResult, viewController: UIViewController) {
