@@ -1400,8 +1400,6 @@ extension CamMonitorViewController: WebSocketDelegate {
 extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, BottomSheetDelegate, URLSessionWebSocketDelegate {
 
     func popupDidSelectItem(index: Int) {
-        print("선택된 아이템 인덱스: \(index)")
-        
         playPresetVoice(position: index)
     }
     
@@ -1416,8 +1414,6 @@ extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, BottomSheet
             let fileNameParts = fileName.split(separator: ".")
             if let firstPart = fileNameParts.first {
                 let targetURL = "\(NxCamMethods.shared.selectedDeviceInfo?.sessionId ?? "")/\(firstPart)"
-//                print("Target URL: \(targetURL)")
-
                 ApiRequest.shared.getPlayPresetVoice(targetURL: targetURL) { (result, error) in
                     if result {
                         self.broadcastHistoryCreate(apiType: "VOICEMSG", eventKind: "")
@@ -1443,7 +1439,7 @@ extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, BottomSheet
         isRecording = true
         
         // 녹음 장치 권한 체크
-        let permission = PermissionViewModel()
+        let permission = PermissionMethod()
         permission.requestMicrophonePermission { [weak self] granted in
             print("micButtonTouchDown granted : \(granted)")
             print("micButtonTouchDown isRecording : \(self?.isRecording)")

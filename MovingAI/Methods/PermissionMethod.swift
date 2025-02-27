@@ -1,5 +1,5 @@
 //
-//  PermissionViewModel.swift
+//  PermissionMethod.swift
 //  MovingAI
 //
 //  Created by soyoung on 12/16/24.
@@ -11,7 +11,7 @@ import Photos
 import PhotosUI
 import CoreLocation
 
-class PermissionViewModel: ObservableObject {
+class PermissionMethod: ObservableObject {
     
     // 앱 처음 시작만 사용
     @Published var permissionNotCompleted: Bool {

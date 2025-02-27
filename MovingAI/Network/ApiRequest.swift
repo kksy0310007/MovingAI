@@ -267,13 +267,20 @@ class ApiRequest {
     
     func setBroadcastHistoryCreate(sessionId: String, apiType: String, eventKind: String, completion: @escaping (Bool, Error?) -> Void){
         
+        guard let sessionIdInt = Int(sessionId) else {
+            print("Error: sessionId를 Int로 변환할 수 없음")
+            completion(false, NSError(domain: "Invalid sessionId", code: -1, userInfo: nil))
+                return
+        }
+        
         // 요청 파라미터
         let parameters: [String: Any] = [
-            "id": Int(sessionId),
+            "id": sessionIdInt,
             "apiType": apiType,
             "eventKind": eventKind,
             "userId": UserAccountMethods.shared.movingAIUserAccount?.userId ?? ""
         ]
+        print("!!!@ setBroadcastHistoryCreate @ - parameters :: \(parameters)" )
         
         AF.request(
             ApiUrl.broadcastHistoryCreate,

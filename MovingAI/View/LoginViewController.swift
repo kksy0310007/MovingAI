@@ -13,7 +13,7 @@ import SwiftUICore
 
 class LoginViewController: UIViewController {
     
-    @StateObject var permissionViewModel = PermissionViewModel()
+    @StateObject var permissionViewModel = PermissionMethod()
     
     private let bottomSheetLayout = UIView()
     private let errorLabel = UILabel()
