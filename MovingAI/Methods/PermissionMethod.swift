@@ -27,7 +27,8 @@ class PermissionMethod: ObservableObject {
     
     // 권한 요청 시작
     func requestPermission() {
-        requestAccessCamera()
+        requestNotification()
+        
     }
     
     // 카메라 권한 요청
@@ -61,7 +62,7 @@ class PermissionMethod: ObservableObject {
     func requestAccessAudio() {
         AVCaptureDevice.requestAccess(for: .audio) { accessGranted in
             self.requestMicrophonePermission { granted in
-                self.requestAccessLocation()
+                self.complete()
             }
         }
     }
@@ -112,12 +113,19 @@ class PermissionMethod: ObservableObject {
             }
 
         }
-        
-        requestNotification()
     }
     
     // 푸시 권한 요청
     func requestNotification() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+            if granted {
+                print(" 푸시 수신 동의")
+            } else {
+                print(" 푸시 수신 거부")
+            }
+        }
+        
+        
         UNUserNotificationCenter.current().getNotificationSettings { permission in
             switch permission.authorizationStatus {
             case .authorized:
@@ -139,7 +147,9 @@ class PermissionMethod: ObservableObject {
                 print("Unknow Status")
             }
         }
-        self.complete()
+        
+        requestAccessCamera()
+        
     }
     
     // 완료되면 FullScreen을 내리기 위해 false로 처리

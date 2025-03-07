@@ -29,10 +29,10 @@ class LoginViewController: UIViewController {
 //    var testId = "dwgc00"
 //    var testPW = "123qwe"
 
-    // 현대 불당
-//    var testId = "YS-HDBD"
+    // 현엔오산
+//    var testId = "YS-HEOS"
 //    var testPW = "123qwe"
-    
+//    
     
     // GS 상도
 //    var testId = "YS-GSSD"
@@ -46,8 +46,12 @@ class LoginViewController: UIViewController {
 //    var testId = "YS-DWKJ"
 //    var testPW = "123qwe"
     
-//    // 현대 잠실 주경기장
+    // 현대 잠실 주경기장
 //    var testId = "hdjs00"
+//    var testPW = "123qwe"
+//    
+    // 국토안전관리원-춘천
+//    var testId = "kalis-cc"
 //    var testPW = "123qwe"
     
     // 영신
