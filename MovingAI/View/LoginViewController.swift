@@ -21,7 +21,7 @@ class LoginViewController: UIViewController {
     let passwordField = UITextField()
     
     var bottomSheetFlag = false
-    var isAutoLogin = true
+    var isAutoLogin = false
     var id: String = ""
     var pw: String = ""
     
@@ -55,8 +55,8 @@ class LoginViewController: UIViewController {
 //    var testPW = "123qwe"
     
     // 영신
-    var testId = "admin_ys"
-    var testPW = "12345678a"
+//    var testId = "admin_ys"
+//    var testPW = "12345678a"
     
     
     let userAccount = UserAccountMethods.shared
@@ -76,9 +76,14 @@ class LoginViewController: UIViewController {
             NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
         
+        self.isAutoLogin = UserDefaults.standard.bool(forKey: "isAutoLogin")
         
-        setUI()
-      
+        if (self.isAutoLogin) {
+            updateUI()
+        } else {
+            setUI()
+        }
+        
     }
     
     func setUI() {
@@ -198,11 +203,11 @@ class LoginViewController: UIViewController {
         }
         
         let autoLoginCheckBox = UIButton(type: .system)
-        autoLoginCheckBox.tintColor = .black
+        autoLoginCheckBox.tintColor = .clear
         autoLoginCheckBox.backgroundColor = .clear
         autoLoginCheckBox.setTitleColor(.black, for: .normal)
-        autoLoginCheckBox.setImage(UIImage(named: "circle_radio_unselected"), for: .normal)
-        autoLoginCheckBox.setImage(UIImage(named: "circle_radio_selected"), for: .selected)
+        autoLoginCheckBox.setImage(UIImage(named: "circle_radio_unselected")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        autoLoginCheckBox.setImage(UIImage(named: "circle_radio_selected")?.withRenderingMode(.alwaysOriginal), for: .selected)
         autoLoginCheckBox.titleLabel?.font = UIFont.systemFont(ofSize: 14)
         autoLoginCheckBox.imageView?.contentMode = .scaleAspectFit
         autoLoginCheckBox.contentHorizontalAlignment = .left
@@ -276,8 +281,8 @@ class LoginViewController: UIViewController {
         
         
         // 테스트용
-        nameField.text = testId
-        passwordField.text = testPW
+//        nameField.text = testId
+//        passwordField.text = testPW
         
         
         
@@ -315,6 +320,7 @@ class LoginViewController: UIViewController {
     
     @objc private func didTapAutoLoginCheckBox(_ sender: UIButton) {
         sender.isSelected.toggle() // 선택 상태를 토글
+        self.isAutoLogin = sender.isSelected
         print("Auto-login checkbox is now: \(sender.isSelected ? "Selected" : "Unselected")")
     }
     
@@ -368,8 +374,8 @@ class LoginViewController: UIViewController {
                 if (self.isAutoLogin) {
                     UserDefaults.standard.set(encodeUserName, forKey: "id")
                     UserDefaults.standard.set(encodePW,forKey: "pwd")
-                    UserDefaults.standard.set(true,forKey: "isAutoLogin")
                 }
+                UserDefaults.standard.set(self.isAutoLogin, forKey: "isAutoLogin")
                 
                // 싱클톤으로 값 저장
                 self.userAccount.name = encodeUserName
