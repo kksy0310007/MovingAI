@@ -6,8 +6,11 @@
 //
 
 import UIKit
+import SwiftyToaster
 
 class PushSettingsViewController: UIViewController {
+    
+    let isPushSetting = UserDefaults.standard.bool(forKey: "isPushSetting")
     
     private let pushLabel: UILabel = {
         let label = UILabel()
@@ -31,8 +34,18 @@ class PushSettingsViewController: UIViewController {
         
     private let toggleSwitch: UISwitch = {
         let toggle = UISwitch()
-        toggle.isOn = true
+        let isAutoLogin = UserDefaults.standard.bool(forKey: "isAutoLogin")
+        if (isAutoLogin) {
+            // 자동 로그인 에만 푸시 알림 설정 켜기 가능.
+            toggle.isEnabled = true
+        } else {
+            UserDefaults.standard.set(false, forKey: "isPushSetting")
+            Toaster.shared.makeToast("자동 로그인이 아니면 푸시 알림을 설정 할 수 없습니다.", .middle)
+            toggle.isEnabled = false
+        }
+    
         toggle.onTintColor = UIColor(_colorLiteralRed: 50/255, green: 83/255, blue: 213/255, alpha: 1.0) // 활성화 상태 배경 색상
+        toggle.addTarget(self, action: #selector(onClickSwitch(sender:)), for: .valueChanged)
         return toggle
     }()
     
@@ -69,6 +82,12 @@ class PushSettingsViewController: UIViewController {
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalTo(pushLabel)
         }
+        
+        if (self.isPushSetting) {
+            toggleSwitch.isOn = true
+        } else {
+            toggleSwitch.isOn = false
+        }
                 
         descriptionLabel.snp.makeConstraints { make in
             make.top.equalTo(pushLabel.snp.bottom).offset(10)
@@ -83,6 +102,18 @@ class PushSettingsViewController: UIViewController {
             make.top.equalTo(descriptionLabel.snp.bottom).offset(20)
         }
         
+    }
+    
+    @objc func onClickSwitch(sender: UISwitch) {
+
+        print("sender.isOn ==== > sender.isOn : \(sender.isOn)")
+        UserDefaults.standard.set(sender.isOn, forKey: "isPushSetting")
+        Toaster.shared.makeToast("푸시 알림 설정이 완료되었습니다.", .short)
+        
+        if (sender.isOn) {
+            print("푸쉬 알림 받기 시작!")
+            eventService.shared.start()
+        }
     }
 
 

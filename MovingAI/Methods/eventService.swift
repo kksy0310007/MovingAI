@@ -23,7 +23,14 @@ class eventService {
     // 서비스 시작
     func start() {
         requestNotificationPermission()
-        startBackgroundTask()
+        
+        let isPushSetting = UserDefaults.standard.bool(forKey: "isPushSetting")
+        if (isPushSetting) {
+            startBackgroundTask()
+        } else {
+            print("푸쉬 설정이 꺼져있어 푸쉬를 받을 수 없습니다.")
+        }
+        
     }
     
     // 1. 푸시 알림 권한 요청

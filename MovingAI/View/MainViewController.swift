@@ -66,7 +66,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         // 현재 위치
         locationManager.delegate = self
         //위치추적권한요청 when in foreground
-        self.locationManager.requestWhenInUseAuthorization()
+//        self.locationManager.requestWhenInUseAuthorization()
         //베터리에 맞게 권장되는 최적의 정확도
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         

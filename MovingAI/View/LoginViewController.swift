@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import Alamofire
 import SwiftUICore
-
+import SwiftyToaster
 
 class LoginViewController: UIViewController {
     
@@ -79,7 +79,20 @@ class LoginViewController: UIViewController {
         self.isAutoLogin = UserDefaults.standard.bool(forKey: "isAutoLogin")
         
         if (self.isAutoLogin) {
-            updateUI()
+            let userDefaultsId = UserDefaults.standard.string(forKey: "id") ?? ""
+            let userDefaultsPWD = UserDefaults.standard.string(forKey: "pwd") ?? ""
+            
+            loginAttempt(userName: userDefaultsId, password: userDefaultsPWD, isEncode: true) { result in
+                if (result) {
+                    // 자동 로그인
+                    self.updateUI()
+                } else {
+                    // 자동 로그인 실패
+                    Toaster.shared.makeToast("다시 로그인 해주세요.", .short)
+                    self.setUI()
+                }
+            }
+            
         } else {
             setUI()
         }
@@ -212,8 +225,8 @@ class LoginViewController: UIViewController {
         autoLoginCheckBox.imageView?.contentMode = .scaleAspectFit
         autoLoginCheckBox.contentHorizontalAlignment = .left
         
-        isAutoLogin = true
-        autoLoginCheckBox.isSelected = true
+//        isAutoLogin = true
+//        autoLoginCheckBox.isSelected = true
         
         bottomSheetLayout.addSubview(autoLoginCheckBox)
         autoLoginCheckBox.snp.makeConstraints { make in
@@ -297,7 +310,15 @@ class LoginViewController: UIViewController {
         } else {
             errorLabel.isHidden = true
             print("로그인 버튼 눌림")
-            loginAttempt(userName: id,password: pw)
+
+            loginAttempt(userName: id, password: pw, isEncode: false) { result in
+                if (result) {
+                    // 화면 이동
+                     DispatchQueue.main.async {
+                         self.updateUI()
+                     }
+                }
+            }
         }
         
             
@@ -360,13 +381,21 @@ class LoginViewController: UIViewController {
         }
     }
     
-    func loginAttempt(userName: String, password: String) {
+    func loginAttempt(userName: String, password: String, isEncode: Bool, completion: @escaping (Bool) -> Void) {
+        var encodeUserName = ""
+        var encodePW = ""
         
-        let userNameEnc = userName.data(using: .utf8)
-        let encodeUserName = userNameEnc!.base64EncodedString()
-        
-        let pwEnc = password.data(using: .utf8)
-        let encodePW = pwEnc!.base64EncodedString()
+        if(!isEncode) {
+            let userNameEnc = userName.data(using: .utf8)
+            encodeUserName = userNameEnc!.base64EncodedString()
+            
+            let pwEnc = password.data(using: .utf8)
+            encodePW = pwEnc!.base64EncodedString()
+        } else {
+            encodeUserName = userName
+            encodePW = password
+        }
+
                         
         ApiRequest.shared.loginAttempt(encUserName: encodeUserName, encPassword: encodePW) { response, error in
             
@@ -386,15 +415,15 @@ class LoginViewController: UIViewController {
                 self.userAccount.attachType = userAccount.attach.attachType ?? "Company"
                 self.userAccount.title = userAccount.attach.name
                
-               // 화면 이동
-                DispatchQueue.main.async {
-                    self.updateUI()
-                }
+                completion(true)
+               
                 
             } else {
                 print("실패하였습니다 :: \(error)" )
                 self.errorLabel.text = "일치하는 회원정보가 없습니다."
                 self.errorLabel.isHidden = false
+                
+                completion(false)
             }
         }
     }
