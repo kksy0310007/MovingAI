@@ -25,12 +25,29 @@ class eventService {
         requestNotificationPermission()
         
         let isPushSetting = UserDefaults.standard.bool(forKey: "isPushSetting")
+        
         if (isPushSetting) {
             startBackgroundTask()
         } else {
             print("푸쉬 설정이 꺼져있어 푸쉬를 받을 수 없습니다.")
+            end()
         }
         
+    }
+    
+    // 서비스 종료
+    func end() {
+        print("이벤트 서비스 종료")
+            
+        // 타이머 중지
+        timer?.invalidate()
+        timer = nil
+            
+        // 백그라운드 작업 종료
+        if backgroundTask != .invalid {
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+            backgroundTask = .invalid
+        }
     }
     
     // 1. 푸시 알림 권한 요청
@@ -47,6 +64,7 @@ class eventService {
     
     // 2. 백그라운드 작업 실행
     private func startBackgroundTask() {
+        print("이벤트 서비스 시작")
         backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "eventBackgroundTask", expirationHandler: {
             UIApplication.shared.endBackgroundTask(self.backgroundTask)
             self.backgroundTask = .invalid

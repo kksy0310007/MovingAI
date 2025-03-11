@@ -105,16 +105,9 @@ class PushSettingsViewController: UIViewController {
     }
     
     @objc func onClickSwitch(sender: UISwitch) {
-
         print("sender.isOn ==== > sender.isOn : \(sender.isOn)")
         UserDefaults.standard.set(sender.isOn, forKey: "isPushSetting")
         Toaster.shared.makeToast("푸시 알림 설정이 완료되었습니다.", .short)
-        
-        if (sender.isOn) {
-            print("푸쉬 알림 받기 시작!")
-            eventService.shared.start()
-        }
+        eventService.shared.start()
     }
-
-
 }
