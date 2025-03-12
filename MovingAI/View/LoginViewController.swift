@@ -25,53 +25,14 @@ class LoginViewController: UIViewController {
     var id: String = ""
     var pw: String = ""
     
-    // 과천 G town
-//    var testId = "dwgc00"
-//    var testPW = "123qwe"
-
-    // 현엔오산
-//    var testId = "YS-HEOS"
-//    var testPW = "123qwe"
-//    
-    
-    // GS 상도
-//    var testId = "YS-GSSD"
-//    var testPW = "123qwe"
-    
-    // 웅진 서초
-//    var testId = "YS-WJSC"
-//    var testPW = "123qwe"
-    
-    // 대우 금정
-//    var testId = "YS-DWKJ"
-//    var testPW = "123qwe"
-    
-    // 현대 잠실 주경기장
-//    var testId = "hdjs00"
-//    var testPW = "123qwe"
-//    
-    // 국토안전관리원-춘천
-//    var testId = "kalis-cc"
-//    var testPW = "123qwe"
-    
-    // 영신
-//    var testId = "admin_ys"
-//    var testPW = "12345678a"
-    
-    
     let userAccount = UserAccountMethods.shared
-    
-
-    // TODO : 자동 로그인 구현
-    
-    
+  
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // 권한 묻기
         permissionViewModel.requestPermission()
         
-    
         // 키보드 이벤트 감지 등록
             NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -225,9 +186,6 @@ class LoginViewController: UIViewController {
         autoLoginCheckBox.imageView?.contentMode = .scaleAspectFit
         autoLoginCheckBox.contentHorizontalAlignment = .left
         
-//        isAutoLogin = true
-//        autoLoginCheckBox.isSelected = true
-        
         bottomSheetLayout.addSubview(autoLoginCheckBox)
         autoLoginCheckBox.snp.makeConstraints { make in
             make.height.width.equalTo(20)
@@ -253,7 +211,6 @@ class LoginViewController: UIViewController {
             make.leading.equalTo(autoLoginCheckBox.snp.trailing).offset(8) // 간격 설정
         }
 
-                
         let loginButton = UIButton(type: .system)
         loginButton.setTitle("로그인", for: .normal)
         loginButton.setTitleColor(.white, for: .normal)
@@ -291,14 +248,6 @@ class LoginViewController: UIViewController {
     
         // 체크박스 선택 상태를 토글하는 액션 추가
         autoLoginCheckBox.addTarget(self, action: #selector(didTapAutoLoginCheckBox), for: .touchUpInside)
-        
-        
-        // 테스트용
-//        nameField.text = testId
-//        passwordField.text = testPW
-        
-        
-        
     }
     
     @objc private func didTapLoginButton() {
@@ -320,11 +269,6 @@ class LoginViewController: UIViewController {
                 }
             }
         }
-        
-            
-        // 입력값 확인 후 작업
-        print("로그인 버튼 눌림")
-        
     }
     
     @objc private func didTapSignInButton() {
@@ -417,7 +361,6 @@ class LoginViewController: UIViewController {
                
                 completion(true)
                
-                
             } else {
                 print("실패하였습니다 :: \(error)" )
                 self.errorLabel.text = "일치하는 회원정보가 없습니다."
@@ -431,10 +374,7 @@ class LoginViewController: UIViewController {
     func updateUI() {
         print("이동시켜라" )
         guard let customTabBarVC = self.storyboard?.instantiateViewController(withIdentifier: "CustomTabBarController") as? CustomTabBarController else { return }
-
         self.navigationController?.pushViewController(customTabBarVC, animated: true)
-//                         self.present(mainVC,animated: true)
-        
     }
 }
 
