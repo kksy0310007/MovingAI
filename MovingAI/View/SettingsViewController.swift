@@ -12,7 +12,7 @@ class SettingsViewController: UIViewController, UITableViewDataSource, UITableVi
 
     let titles = ["푸시 알림 설정", "로그아웃"]
     
-    var customTabBar = CustomTabBar()
+//    var customTabBar = CustomTabBar()
 //    var customTabBarVC = CustomTabBarController()
     
     private let tableView : UITableView = { // 테이블 뷰 생성
@@ -95,37 +95,26 @@ class SettingsViewController: UIViewController, UITableViewDataSource, UITableVi
                     print("yes 클릭")
                     
                     // userDefualt 지우기
-                    UserDefaults.standard.removeObject(forKey: "id")
-                    UserDefaults.standard.removeObject(forKey: "pwd")
-                    UserDefaults.standard.removeObject(forKey: "isAutoLogin")
-                    
-                    // SimpleForegroundService stop
-                    // NxCamMethods -> logoutAccount
-                    // 로그인 화면으로 돌아가기
-
-                    
-                    guard let loginVC = self.storyboard?.instantiateViewController(withIdentifier: "LoginViewController") as? LoginViewController else { return }
-                    self.navigationController?.pushViewController(loginVC, animated: true)
-                    self.navigationController?.modalPresentationStyle = .fullScreen
-                    self.navigationController?.navigationBar.isHidden = true
-                    self.navigationController?.interactivePopGestureRecognizer?.isEnabled = false // 제스처 막기
-                    
-                    // 모든 기존 뷰를 초기화하고 새로운 화면 설정
-                    if #available(iOS 15, *) {
-                        // iOS 15 이상
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                            if let window = windowScene.windows.first {
-                                window.rootViewController = self.navigationController
-                                window.makeKeyAndVisible()
-                            }
-                        }
-                    } else {
-                        // iOS 14 이하
-                        if let window = UIApplication.shared.windows.first {
-                            window.rootViewController = self.navigationController
-                            window.makeKeyAndVisible()
-                        }
+                    for key in UserDefaults.standard.dictionaryRepresentation().keys {
+                        UserDefaults.standard.removeObject(forKey: key.description)
                     }
+//                    UserDefaults.standard.removeObject(forKey: "id")
+//                    UserDefaults.standard.removeObject(forKey: "pwd")
+//                    UserDefaults.standard.removeObject(forKey: "isAutoLogin")
+//                    UserDefaults.standard.removeObject(forKey: "isPushSetting")
+//                    UserDefaults.standard.removeObject(forKey: "siteAssets")
+                    
+                    // 로그인 화면으로 돌아가기
+                    if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
+                          let window = sceneDelegate.window {
+                           
+                           let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                           let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController") as! LoginViewController
+                           let navController = UINavigationController(rootViewController: loginVC)
+                            navController.navigationBar.isHidden = true
+                           window.rootViewController = navController
+                           window.makeKeyAndVisible()
+                       }
                     
                     Toaster.shared.makeToast("로그아웃 했습니다.", .short)
                 }))

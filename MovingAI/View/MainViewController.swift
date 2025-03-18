@@ -54,14 +54,24 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        allAssetDeviceList.removeAll()
+        onlineDeviceList.removeAll()
+        allAttachList.removeAll()
+        userAccessibleAllSitesList.removeAll()
+        allSiteAssetList.removeAll()
+        onlineSiteAssetList.removeAll()
+        
+        
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         // 메인화면 타이틀 설정
         let title = userAccount.title
         addNavigationBar(titleString: title,isBackButtonVisible: false)
-        
         
         // 현재 위치
         locationManager.delegate = self
@@ -431,6 +441,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 }
                 
                 // 현장 온라인장비 저장
+                self.nxCamData.deviceInfoList.removeAll()
                 self.nxCamData.deviceInfoList.append(contentsOf: self.onlineSiteAssetList)
                 
                 // 전체 장비 리스트

@@ -36,7 +36,7 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         
         // 상단 타이틀 바
         addNavigationBar(titleString: "실시간 목록",isBackButtonVisible: false)
-        
+                
         view.backgroundColor = UIColor(cgColor: CGColor(red: 249/255, green: 249/255, blue: 249/255, alpha: 1.0))
         
         // 운용 전체 장비 라벨

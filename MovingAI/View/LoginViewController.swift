@@ -375,6 +375,7 @@ class LoginViewController: UIViewController {
         print("이동시켜라" )
         guard let customTabBarVC = self.storyboard?.instantiateViewController(withIdentifier: "CustomTabBarController") as? CustomTabBarController else { return }
         self.navigationController?.pushViewController(customTabBarVC, animated: true)
+        self.navigationController?.interactivePopGestureRecognizer?.isEnabled = false // 제스처 막기
     }
 }
 
