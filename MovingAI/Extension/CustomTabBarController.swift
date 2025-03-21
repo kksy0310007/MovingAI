@@ -46,20 +46,14 @@ class CustomTabBarController: UITabBarController {
         tabBar.didTapButton = { [unowned self] in
             self.routeToCreateNewAd()
         }
-        
-        
+    
         // 시작 탭바 페이지
         self.selectedIndex = 1
     }
     
     func routeToCreateNewAd() {
-//        let createAdNavController = self.storyboard?.instantiateViewController(withIdentifier: "MainNav") as! UINavigationController
-//        createAdNavController.modalPresentationCapturesStatusBarAppearance = true
-//        self.present(createAdNavController, animated: true, completion: nil)
-//
         self.selectedIndex = 1
     }
-
 }
 
 // MARK: - UITabBarController Delegate

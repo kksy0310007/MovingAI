@@ -11,7 +11,7 @@ class CustomTabBar: UITabBar {
     
     // MARK: - Variables
     public var didTapButton: (() -> ())?
-    
+        
     public lazy var middleButton: UIButton! = {
         let middleButton = UIButton()
         

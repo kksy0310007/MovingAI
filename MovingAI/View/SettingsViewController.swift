@@ -12,9 +12,6 @@ class SettingsViewController: UIViewController, UITableViewDataSource, UITableVi
 
     let titles = ["푸시 알림 설정", "로그아웃"]
     
-//    var customTabBar = CustomTabBar()
-//    var customTabBarVC = CustomTabBarController()
-    
     private let tableView : UITableView = { // 테이블 뷰 생성
             let tableView = UITableView()
             tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -28,12 +25,7 @@ class SettingsViewController: UIViewController, UITableViewDataSource, UITableVi
         // 상단 타이틀 바
         addNavigationBar(titleString: "설정",isBackButtonVisible: true)
         navigationController?.navigationBar.tintColor = UIColor.white
-        
-//        customTabBar.didTapButton = { [unowned self] in
-//            self.navigationController?.popViewController(animated: true)
-//            self.customTabBarVC.selectedIndex = 1
-//        }
-        
+                
         // tableview 설정
         tableView.dataSource = self
         tableView.rowHeight = 61

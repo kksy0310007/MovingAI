@@ -14,7 +14,7 @@ import iOSDropDown
 import SwiftyToaster
 
 class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler {
-    
+
     var webView: WKWebView!
         
     // 현재 위치의 위도, 경도
@@ -45,7 +45,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     let dropDown = DropDown()
     // DropDown 데이터를 담을 배열
     var dropDownDataSource: [String] = []
-    
+        
     @available(iOS 8.0, *)
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!\(message.name)")
@@ -54,21 +54,26 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         }
     }
     
+    func refreshWebView() {
+        webView.reload()
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        allAssetDeviceList.removeAll()
-        onlineDeviceList.removeAll()
-        allAttachList.removeAll()
-        userAccessibleAllSitesList.removeAll()
-        allSiteAssetList.removeAll()
-        onlineSiteAssetList.removeAll()
+//        allAssetDeviceList.removeAll()
+//        onlineDeviceList.removeAll()
+//        allAttachList.removeAll()
+//        userAccessibleAllSitesList.removeAll()
+//        allSiteAssetList.removeAll()
+//        onlineSiteAssetList.removeAll()
         
-        
+        refreshWebView()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
         // 메인화면 타이틀 설정
         let title = userAccount.title
         addNavigationBar(titleString: title,isBackButtonVisible: false)
@@ -80,17 +85,9 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         //베터리에 맞게 권장되는 최적의 정확도
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
+//        customTabBarVC.delegate = self
         
-        
-        // 전체 온라인 장비
-        apiOnlineDevices()
-        // 전체 장비
-        apiAllAssets()
-        // 전체 현장
-        apiAllSites()
-        
-        // 접근 가능한 현장의 온라인/전체 장비 데이터를 불러오고 처리하는 thread 작업
-        siteAssetsCheck()
+        initData()
         
         // 권한 체크
 //        checkAuthorizationStatus()
@@ -101,6 +98,18 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         
         initDropDown()
         
+//        isFirst = false
+    }
+    
+    private func initData() {
+        // 전체 온라인 장비
+        apiOnlineDevices()
+        // 전체 장비
+        apiAllAssets()
+        // 전체 현장
+        apiAllSites()
+        // 접근 가능한 현장의 온라인/전체 장비 데이터를 불러오고 처리하는 thread 작업
+        siteAssetsCheck()
     }
     
     private func mapWithWebView() {
@@ -175,7 +184,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             DispatchQueue.main.async {
                 print("makeAddMarkerLayer : 3 seconds have passed")
                              
-                
                 // 접근 가능한 현장의 장비 리스트만 마커 업로드하기
                 for targetDevice in self.onlineSiteAssetList {
                     for targetAsset in self.allSiteAssetList {
@@ -252,47 +260,47 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     
     private func settingsWebView() {
     
-            // 웹 뷰 설정 - javaScript 사용 설정, 자동으로 javaScript를 통해 새 창 열기 설정
-            let preferences = WKPreferences() // 웹 뷰 기본 속성
-            preferences.javaScriptCanOpenWindowsAutomatically = true
-            let contentController = WKUserContentController() // 웹 뷰와 javaScript간의 상호작용 관리
-            // 사용 할 메시지 등록
-            let markerInterface = SelectCamFromMarkerInterface(context: self, deviceList: onlineSiteAssetList)
+        // 웹 뷰 설정 - javaScript 사용 설정, 자동으로 javaScript를 통해 새 창 열기 설정
+        let preferences = WKPreferences() // 웹 뷰 기본 속성
+        preferences.javaScriptCanOpenWindowsAutomatically = true
+        let contentController = WKUserContentController() // 웹 뷰와 javaScript간의 상호작용 관리
+        // 사용 할 메시지 등록
+        let markerInterface = SelectCamFromMarkerInterface(context: self, deviceList: onlineSiteAssetList)
 //            contentController.add(markerInterface, name: "MarkerInterface")
-            contentController.add(self, name: "MarkerInterface")
+        contentController.add(self, name: "MarkerInterface")
         
         
-            // preference, contentController 설정
-            let configuration = WKWebViewConfiguration()
-            configuration.userContentController = contentController
-            configuration.preferences = preferences
+        // preference, contentController 설정
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = contentController
+        configuration.preferences = preferences
             
-            // 버전에 따른 자바스크립트 허용 여부
-            if #available(iOS 14.0, *) {
-                configuration.defaultWebpagePreferences.allowsContentJavaScript = true
-            } else {
-                configuration.preferences.javaScriptEnabled = true
-            }
-
-            webView = WKWebView(frame: .zero, configuration: configuration)
-            webView.uiDelegate = self
-            webView.navigationDelegate = self
-            webView.allowsBackForwardNavigationGestures = true // 뒤로가기 제스처 허용
-            
-            if #available(iOS 16.4, *) {
-                #if DEBUG
-                webView.isInspectable = true  // webview inspector 가능하도록 설정
-                #endif
-            }
-            
-            // snapkit 으로 화면 구성
-            initView()
-            
-            // HTML 파일 로드
-            loadWebView()
-        
-            mapWithWebView()
+        // 버전에 따른 자바스크립트 허용 여부
+        if #available(iOS 14.0, *) {
+            configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        } else {
+            configuration.preferences.javaScriptEnabled = true
         }
+
+        webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.uiDelegate = self
+        webView.navigationDelegate = self
+        webView.allowsBackForwardNavigationGestures = true // 뒤로가기 제스처 허용
+            
+        if #available(iOS 16.4, *) {
+            #if DEBUG
+            webView.isInspectable = true  // webview inspector 가능하도록 설정
+            #endif
+        }
+            
+        // snapkit 으로 화면 구성
+        initView()
+            
+        // HTML 파일 로드
+        loadWebView()
+        
+        mapWithWebView()
+    }
 
     
     private func loadWebView() {
@@ -529,6 +537,8 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
 
                 } else {
                     print("No matching device found for \(selectedText)")
+                    LoadingIndicator.shared.hide()
+                    Toaster.shared.makeToast("장비 정보를 찾을 수 없습니다.", .short)
                 }
         }
     }
