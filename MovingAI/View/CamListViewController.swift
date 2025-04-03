@@ -10,7 +10,7 @@ import UIKit
 
 class CamListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
-    
+    let eventDataInstance = NxCamEventData()
     private let tableView : UITableView = { // 테이블 뷰 생성
             let tableView = UITableView()
             tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -30,6 +30,10 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
     let nxCamData = NxCamMethods.shared
     
     var camList: [NxCamDeviceInfo] = []
+    var assetAiModelDataList: [AssetAiModelData] = []
+    var assetAiModelHashMap: [Int: AssetAiModelData] = [:]
+    
+    var sbAiModel = [String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,6 +62,8 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         
         deviceCountShow()
         camList = nxCamData.getDeviceInfoList()
+        print("?@?@?@? camList : \(camList)")
+        getAiModelData()
     }
     
     private func setConstraint() {
@@ -72,6 +78,36 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         tableView.snp.makeConstraints { make in
             make.bottom.leading.trailing.equalToSuperview()
             make.top.equalTo(deviceCountLabel.snp.bottom)
+        }
+    }
+    
+    func getAiModelData() {
+        assetAiModelDataList.removeAll()
+        
+        ApiRequest.shared.getAssetAiModel(assetId: nil, assetName: nil, siteId: nil, siteName: nil) { response, error in
+            if let data = response {
+                let filteredList = data.filter { data in
+                    if let id = data.id {
+                        return self.camList.contains { cam in
+                            return "\(id)" == "\(cam.sessionId)"
+                        }
+                    }
+                    return false
+                }
+                    self.assetAiModelDataList = filteredList
+
+                    // 2. Dictionary (HashMap) 만들기
+                    var modelMap: [Int: AssetAiModelData] = [:]
+                    for item in filteredList {
+                        modelMap[item.id!] = item
+                    }
+                    
+                    self.assetAiModelHashMap = modelMap
+                    self.tableView.reloadData()
+                
+            } else {
+                print("!!!@ AI모델 @ - error :: \(error)" )
+            }
         }
     }
     
@@ -97,6 +133,19 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         
         cell.title.text = camList[indexPath.row].deviceName
         cell.dateLabel.text = camList[indexPath.row].eventTime
+        
+//        var sbAiModel = [String]()
+        
+        if let sessionId = Int(camList[indexPath.row].sessionId),
+           let targetAiModelStringList = assetAiModelHashMap[sessionId]?.aiModelList {
+            
+            // AI 모델을 장비 Item에 매칭시켜주는 작업
+            for aiModel in targetAiModelStringList {
+                sbAiModel.append(eventDataInstance.setEventTranslateK(event: aiModel))
+            }
+            cell.aiModelLabel.text = "AI 모델: " + sbAiModel.joined(separator: ", ")
+        }
+        
         cell.selectionStyle = .none
         return cell
 
@@ -115,6 +164,7 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
     
         guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else { return }
         camMonitorVC.titleString = selected.deviceName
+        camMonitorVC.aiModelString = sbAiModel.joined(separator: ", ")
         self.navigationController?.pushViewController(camMonitorVC, animated: true)
     }
 

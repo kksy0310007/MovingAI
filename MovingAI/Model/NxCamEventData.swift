@@ -38,4 +38,25 @@ class NxCamEventData {
             return event // 기본값
         }
     }
+    
+    func setEventTranslateK(event: String) -> String {
+        switch event {
+        case "BATTERY":
+            return "배터리"
+        case "FAINT":
+            return "쓰러짐"
+        case "HOOK":
+            return "안전고리"
+        case "HELMET":
+            return "헬멧"
+        case "INVASION":
+            return "침입"
+        case "PANIC":
+            return "긴급"
+        case "FIRE":
+            return "화재"
+        default:
+            return event // 기본값
+        }
+    }
 }

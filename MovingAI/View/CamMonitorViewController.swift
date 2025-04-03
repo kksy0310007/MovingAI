@@ -56,6 +56,9 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     private let minSheetHeight: CGFloat = 45
     private let maxSheetHeight: CGFloat = 250
     
+    // AI 모델 리스트
+    var aiModelString = ""
+    
     // 모니터 뷰 버튼
     let channelSwitch: CustomSwitch = {
         let view = CustomSwitch()
@@ -72,6 +75,15 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         label.textColor = .white
         return label
     }()
+    
+    private let aiModelLabel : UILabel = {
+        let label = UILabel()
+        label.text = "AI Model"
+        label.textColor = .white
+        label.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        return label
+    }()
+    
     
     var fullScreenButton: UIButton! = {
         let button = UIButton()
@@ -276,6 +288,14 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         return label
     }()
     
+    private let fullScreenAiModelLabel : UILabel = {
+        let label = UILabel()
+        label.text = "AI Model"
+        label.textColor = .white
+        label.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        return label
+    }()
+    
     private let fullScreenBackButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(systemName: "chevron.backward"), for: .normal)
@@ -455,6 +475,10 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
 //        Rtpsocket?.connect()
 //
 //        reloadViewController()
+        
+        print("Ai 모델 String 받았니??? ====> \(aiModelString)")
+        aiModelLabel.text = "[AI Model] \n" + aiModelString.replacingOccurrences(of: ", ", with: "\n")
+        fullScreenAiModelLabel.text = "[AI Model] \n" + aiModelString.replacingOccurrences(of: ", ", with: "\n")
     }
     
     override func viewDidLoad() {
@@ -528,6 +552,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         // 버튼 추가
         self.monitorButtonsView.addSubview(channelSwitch)
         self.monitorButtonsView.addSubview(channelLabel)
+        self.monitorButtonsView.addSubview(aiModelLabel)
         
         channelSwitch.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-15)
@@ -540,6 +565,14 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
             make.top.equalToSuperview().offset(20)
             make.leading.equalToSuperview().offset(20)
         }
+        
+        aiModelLabel.snp.makeConstraints { make in
+            make.top.equalTo(channelLabel.snp.bottom).offset(8)
+            make.leading.equalToSuperview().offset(20)
+            make.width.equalTo(80)
+        }
+        aiModelLabel.numberOfLines = 0  // 여러 줄 지원
+        aiModelLabel.lineBreakMode = .byWordWrapping // 줄바꿈 모드 설정
         
         // 라벨 추가
         self.monitorButtonsView.addSubview(fullScreenButton)
@@ -746,6 +779,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         
         self.monitorFullScreenButtonsView.addSubview(fullScreenChannelSwitch)
         self.monitorFullScreenButtonsView.addSubview(fullScreenChannelLabel)
+        self.monitorFullScreenButtonsView.addSubview(fullScreenAiModelLabel)
         self.monitorFullScreenButtonsView.addSubview(fullScreenBackButton)
         
         fullScreenBackButton.snp.makeConstraints { make in
@@ -757,6 +791,13 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
             make.top.equalTo(fullScreenBackButton.snp.bottom).offset(25)
             make.centerX.equalTo(fullScreenBackButton.snp.centerX)
         }
+        
+        fullScreenAiModelLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(10)
+            make.trailing.equalTo(fullScreenBackButton.snp.leading).offset(-10)
+        }
+        fullScreenAiModelLabel.numberOfLines = 0  // 여러 줄 지원
+        fullScreenAiModelLabel.lineBreakMode = .byWordWrapping // 줄바꿈 모드 설정
         
         fullScreenChannelSwitch.snp.makeConstraints { make in
             make.centerX.equalTo(fullScreenBackButton.snp.centerX)
@@ -855,6 +896,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         if isInitSettting {
             fullScreenBackButton.rotate(angle: 90)
             fullScreenChannelLabel.rotate(angle: 90)
+            fullScreenAiModelLabel.rotate(angle: 90)
             fullScreenChannelSwitch.rotate(angle: 90)
             fullScreenOnButton.rotate(angle: 90)
             fullScreenOffButton.rotate(angle: 90)

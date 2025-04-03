@@ -349,4 +349,45 @@ class ApiRequest {
                 
             }
     }
+    
+    func getAssetAiModel(assetId: Int?, assetName: String?, siteId: Int?, siteName: String?, completion: @escaping ([AssetAiModelData]?, Error?) -> Void){
+        
+        // 요청 파라미터: nil이 아닌 값만 포함
+            var parameters: [String: Any] = [:]
+            
+            if let assetId = assetId {
+                parameters["assetId"] = assetId
+            }
+            if let assetName = assetName {
+                parameters["assetName"] = assetName
+            }
+            if let siteId = siteId {
+                parameters["siteId"] = siteId
+            }
+            if let siteName = siteName {
+                parameters["siteName"] = siteName
+            }
+        
+        print("!!!@ getAssetAiModel @ - parameters :: \(parameters)" )
+        
+        AF.request(
+            ApiUrl.postAssetAiModel,
+            method: .post,
+            parameters: parameters,
+            encoding: JSONEncoding.default,
+            headers: commonHeaders
+        ).validate(statusCode: 200..<300)
+            .responseDecodable(of: [AssetAiModelData].self) { response in
+                switch response.result {
+                    case .success(let data):
+                        print("@ getAssetAiModel @ - 성공하였습니다 :: ")
+                        completion(data, nil)
+
+                        
+                    case .failure(let error):
+                        print("@ getAssetAiModel @ - 실패하였습니다 :: \(error)" )
+                        completion(nil, error)
+                }
+            }
+    }
 }

@@ -64,4 +64,7 @@ struct ApiUrl {
     
     // eventVideoFileDownload
     static let eventVideoFileDownload: String = baseDataApiUrl + "event/download?"
+    
+    // aiModelData
+    static let postAssetAiModel: String = baseDataApiUrl + "asset"
 }

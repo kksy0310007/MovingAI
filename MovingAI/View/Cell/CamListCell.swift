@@ -30,6 +30,15 @@ class CamListCell: UITableViewCell {
     let dateLabel: UILabel = {
         let label = UILabel()
         label.text = "date"
+        label.textColor = UIColor.gray
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: 14)
+        return label
+    }()
+    
+    let aiModelLabel: UILabel = {
+        let label = UILabel()
+        label.text = "AI 모델: "
         label.textColor = UIColor.black
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.systemFont(ofSize: 14)
@@ -62,6 +71,7 @@ class CamListCell: UITableViewCell {
         contentView.addSubview(title)
         contentView.addSubview(dateLabel)
         contentView.addSubview(imageBtn)
+        contentView.addSubview(aiModelLabel)
         
         contentView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -75,7 +85,13 @@ class CamListCell: UITableViewCell {
         }
         
         dateLabel.snp.makeConstraints { make in
-            make.top.equalTo(title.snp.bottom).offset(15)
+            make.top.equalTo(title.snp.bottom).offset(5)
+            make.leading.equalToSuperview().offset(15)
+            make.trailing.equalTo(imageBtn.snp.leading).offset(-10)
+        }
+        
+        aiModelLabel.snp.makeConstraints { make in
+            make.top.equalTo(dateLabel.snp.bottom).offset(5)
             make.leading.equalToSuperview().offset(15)
             make.trailing.equalTo(imageBtn.snp.leading).offset(-10)
         }
@@ -97,9 +113,11 @@ class CamListCell: UITableViewCell {
             case .expanded:
                 title.isHidden = false
                 dateLabel.isHidden = false
+                aiModelLabel.isHidden = false
             case .simple:
                 title.isHidden = false
                 dateLabel.isHidden = true
+                aiModelLabel.isHidden = true
             }
             
             // 강제로 레이아웃 갱신
