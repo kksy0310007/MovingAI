@@ -33,7 +33,7 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
     var assetAiModelDataList: [AssetAiModelData] = []
     var assetAiModelHashMap: [Int: AssetAiModelData] = [:]
     
-    var sbAiModel = [String]()
+    var aiModelString = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -63,6 +63,7 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         deviceCountShow()
         camList = nxCamData.getDeviceInfoList()
         print("?@?@?@? camList : \(camList)")
+        
         getAiModelData()
     }
     
@@ -133,17 +134,16 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         
         cell.title.text = camList[indexPath.row].deviceName
         cell.dateLabel.text = camList[indexPath.row].eventTime
-        
-//        var sbAiModel = [String]()
+        var sbAiModel = [String]()
         
         if let sessionId = Int(camList[indexPath.row].sessionId),
            let targetAiModelStringList = assetAiModelHashMap[sessionId]?.aiModelList {
-            
             // AI 모델을 장비 Item에 매칭시켜주는 작업
             for aiModel in targetAiModelStringList {
                 sbAiModel.append(eventDataInstance.setEventTranslateK(event: aiModel))
             }
-            cell.aiModelLabel.text = "AI 모델: " + sbAiModel.joined(separator: ", ")
+            aiModelString = sbAiModel.joined(separator: ", ")
+            cell.aiModelLabel.text = "AI 모델: " + aiModelString
         }
         
         cell.selectionStyle = .none
@@ -164,7 +164,7 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
     
         guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else { return }
         camMonitorVC.titleString = selected.deviceName
-        camMonitorVC.aiModelString = sbAiModel.joined(separator: ", ")
+        camMonitorVC.aiModelString = aiModelString
         self.navigationController?.pushViewController(camMonitorVC, animated: true)
     }
 

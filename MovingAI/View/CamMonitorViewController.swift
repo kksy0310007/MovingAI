@@ -475,10 +475,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
 //        Rtpsocket?.connect()
 //
 //        reloadViewController()
-        
-        print("Ai 모델 String 받았니??? ====> \(aiModelString)")
-        aiModelLabel.text = "[AI Model] \n" + aiModelString.replacingOccurrences(of: ", ", with: "\n")
-        fullScreenAiModelLabel.text = "[AI Model] \n" + aiModelString.replacingOccurrences(of: ", ", with: "\n")
     }
     
     override func viewDidLoad() {
@@ -489,6 +485,11 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
             titleString = "실시간 영상"
         }
         addNavigationBar(titleString: titleString!,isBackButtonVisible: true)
+        
+        fullScreenAiModelLabel.text = ""
+        aiModelLabel.text = "[AI Model] \n" + aiModelString.replacingOccurrences(of: ", ", with: "\n")
+        fullScreenAiModelLabel.text = "[AI Model] \n" + aiModelString.replacingOccurrences(of: ", ", with: "\n")
+        
         
         initMonitorView()
         initControllerView()
