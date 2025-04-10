@@ -36,6 +36,12 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     /// 접근 가능한 현장 전체의 온라인 장비
     private var onlineSiteAssetList: [NxCamDeviceInfo] = []
     
+    // AiModel Data
+    var assetAiModelDataList: [AssetAiModelData] = []
+    var assetAiModelHashMap: [Int: AssetAiModelData] = [:]
+    var aiModelString = ""
+    let eventDataInstance = NxCamEventData()
+    
     // 데이터 저장
     let userAccount = UserAccountMethods.shared
     let nxCamData = NxCamMethods.shared
@@ -48,9 +54,9 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         
     @available(iOS 8.0, *)
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!\(message.name)")
         if (message.name == "MarkerInterface") {
-            print("\(message.body)")
+            print("1===>\(message.body)")
+            handleMarkerSelection(message.body as! String)
         }
     }
     
@@ -97,7 +103,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         self.webView.reload()
         
         initDropDown()
-        
 //        isFirst = false
     }
     
@@ -488,7 +493,37 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     onlineSiteAssetList.append(targetOnlineDevice)
                     // 드롭다운 리스트
                     setDropDown()
+                    getAiModelData()
                 }
+            }
+        }
+    }
+    
+    func getAiModelData() {
+        assetAiModelDataList.removeAll()
+        
+        let camList = onlineSiteAssetList
+        ApiRequest.shared.getAssetAiModel(assetId: nil, assetName: nil, siteId: nil, siteName: nil) { response, error in
+            if let data = response {
+                let filteredList = data.filter { data in
+                    if let id = data.id {
+                        return camList.contains { cam in
+                            return "\(id)" == "\(cam.sessionId)"
+                        }
+                    }
+                    return false
+                }
+                    self.assetAiModelDataList = filteredList
+
+                    // 2. Dictionary (HashMap) 만들기
+                    var modelMap: [Int: AssetAiModelData] = [:]
+                    for item in filteredList {
+                        modelMap[item.id!] = item
+                    }
+                    
+                    self.assetAiModelHashMap = modelMap
+            } else {
+                print("!!!@ AI모델 @ - error :: \(error)" )
             }
         }
     }
@@ -540,6 +575,33 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     LoadingIndicator.shared.hide()
                     Toaster.shared.makeToast("장비 정보를 찾을 수 없습니다.", .short)
                 }
+        }
+    }
+    
+    private func handleMarkerSelection(_ markerTitle: String) {
+        let markerDataSplit = markerTitle.split(separator: ",").map { String($0) }
+        guard let sessionId = markerDataSplit.first else { return }
+        
+        if let selectedDevice = onlineSiteAssetList.first(where: { $0.sessionId == sessionId }) {
+            NxCamMethods.shared.setSelectedDeviceInfo(selectedDevice)
+        
+            guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else { return }
+            
+            var sbAiModel = [String]()
+        
+            if let sessionId = Int(sessionId),
+               let targetAiModelStringList = assetAiModelHashMap[sessionId]?.aiModelList {
+                
+                // AI 모델을 장비 Item에 매칭시켜주는 작업
+                for aiModel in targetAiModelStringList {
+                    sbAiModel.append(eventDataInstance.setEventTranslateK(event: aiModel))
+                }
+                aiModelString = sbAiModel.joined(separator: ", ")
+            }
+            
+            camMonitorVC.titleString = selectedDevice.deviceName
+            camMonitorVC.aiModelString = aiModelString
+            self.navigationController?.pushViewController(camMonitorVC, animated: true)
         }
     }
 }

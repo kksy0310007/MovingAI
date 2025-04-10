@@ -32,7 +32,6 @@ class NxCamMethods {
     // 선택한 장비  정보
     var selectedDeviceInfo: NxCamDeviceInfo? = nil
     
-    
     func getDeviceInfoList() -> [NxCamDeviceInfo] {
         return deviceInfoList
     }

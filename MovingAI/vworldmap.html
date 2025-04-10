@@ -62,13 +62,10 @@
               MarkerInterface.startCamMonitoring(feature.get('title'));
           } else if ( agent.indexOf("iphone") > -1 || agent.indexOf("ipad") > -1 || agent.indexOf("ipod") > -1) {
               console.log("iOS");
-              window.webkit.messageHandlers.callbackHandler.postMessage("MarkerInterface");
+              window.webkit.messageHandlers.MarkerInterface.postMessage(feature.get('title'));
           } else {
               console.log("else");
           }
-          
-          
-          
           
           // 새로운 popup 인스턴스 집어넣기(popup 사라짐)
           vmap.addOverlay(new vw.ol3.popup.Popup());
@@ -155,7 +152,9 @@
         epsg : "EPSG:4326",
         title : markerDeviceDataString, // 마커 클릭 후 뜨는 팝업에서 보이는 글자
         contents : markerContents,
-        // iconUrl : './5050marker.png',
+        //iconSize: [10, 10],
+        iconScale: 0.5,
+        iconUrl : './image.png',
         text : {
           offsetX : 0.5,
           offsetY : 20,
