@@ -139,6 +139,7 @@ class LoginViewController: UIViewController {
            
         nameField.placeholder = NSLocalizedString("아이디를 입력하세요.", comment: "")
         nameField.borderStyle = .none
+        nameField.textColor = .black
         nameField.font = UIFont.systemFont(ofSize: 16)
         bottomSheetLayout.addSubview(nameField)
         nameField.snp.makeConstraints { make in
@@ -160,6 +161,7 @@ class LoginViewController: UIViewController {
         passwordField.borderStyle = .none
         passwordField.isSecureTextEntry = true
         passwordField.font = UIFont.systemFont(ofSize: 16)
+        passwordField.textColor = .black
         bottomSheetLayout.addSubview(passwordField)
         passwordField.snp.makeConstraints { make in
             make.height.equalTo(50)
@@ -259,7 +261,8 @@ class LoginViewController: UIViewController {
         } else {
             errorLabel.isHidden = true
             print("로그인 버튼 눌림")
-
+            
+            LoadingIndicator.shared.show()
             loginAttempt(userName: id, password: pw, isEncode: false) { result in
                 if (result) {
                     // 화면 이동
@@ -365,7 +368,7 @@ class LoginViewController: UIViewController {
                 print("실패하였습니다 :: \(error)" )
                 self.errorLabel.text = "일치하는 회원정보가 없습니다."
                 self.errorLabel.isHidden = false
-                
+                LoadingIndicator.shared.hide()
                 completion(false)
             }
         }
@@ -373,6 +376,8 @@ class LoginViewController: UIViewController {
     
     func updateUI() {
         print("이동시켜라" )
+        
+        LoadingIndicator.shared.hide()
         guard let customTabBarVC = self.storyboard?.instantiateViewController(withIdentifier: "CustomTabBarController") as? CustomTabBarController else { return }
         self.navigationController?.pushViewController(customTabBarVC, animated: true)
         self.navigationController?.interactivePopGestureRecognizer?.isEnabled = false // 제스처 막기

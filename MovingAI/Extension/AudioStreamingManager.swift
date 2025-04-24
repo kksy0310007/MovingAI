@@ -18,15 +18,17 @@ class AudioStreamingManager: NSObject {
     
     // 오디오 설정
     private let bufferSize: AVAudioFrameCount = 2048
-    private let sampleRate: Double = 44100.0 // 서버와 일치해야 함
+    private let sampleRate: Double = 48000.0//44100.0 // 서버와 일치해야 함
     private let audioFormat: AVAudioFormat
     
     override init() {
         // 오디오 입력 노드 및 포맷 설정
         self.inputNode = audioEngine.inputNode
         let audioSession = AVAudioSession.sharedInstance()
-        self.audioFormat = AVAudioFormat(commonFormat: .pcmFormatInt16,
-                                                  sampleRate: audioSession.sampleRate,
+        try? audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .defaultToSpeaker])
+        try? audioSession.setActive(true)
+        self.audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32,//.pcmFormatInt16,
+                                                  sampleRate: sampleRate,//audioSession.sampleRate,
                                                   channels: 1,
                                                   interleaved: true)!
         super.init()
@@ -93,6 +95,7 @@ class AudioStreamingManager: NSObject {
     
     private func convertAudioBufferToPCM(buffer: AVAudioPCMBuffer) -> Data {
         let audioBuffer = buffer.audioBufferList.pointee.mBuffers
+        guard let mData = audioBuffer.mData else { return Data() }
         return Data(bytes: audioBuffer.mData!, count: Int(audioBuffer.mDataByteSize))
     }
 }
