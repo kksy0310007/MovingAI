@@ -29,7 +29,7 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
     
     let nxCamData = NxCamMethods.shared
     
-    var camList: [NxCamDeviceInfo] = []
+    var camList: [NewNxCamDeviceInfo] = []
     var assetAiModelDataList: [AssetAiModelData] = []
     var assetAiModelHashMap: [Int: AssetAiModelData] = [:]
     
@@ -60,9 +60,26 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         // tableview 위치, 크기
         setConstraint()
         
+        
+        camList.removeAll()
+        
+        // 리스트 중복 제거
+        let originalList = nxCamData.getNewDeviceInfoList()
+        var seenSerials = Set<String>()
+        let uniqueList = originalList.filter { deviceInfo in
+            let serial = deviceInfo.deviceData.deviceSerial
+            if seenSerials.contains(serial) {
+                return false
+            } else {
+                seenSerials.insert(serial)
+                return true
+            }
+        }
+
+        camList = uniqueList
+        
+        
         deviceCountShow()
-        camList = nxCamData.getDeviceInfoList()
-        print("?@?@?@? camList : \(camList)")
         
         getAiModelData()
     }
@@ -90,7 +107,7 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
                 let filteredList = data.filter { data in
                     if let id = data.id {
                         return self.camList.contains { cam in
-                            return "\(id)" == "\(cam.sessionId)"
+                            return "\(id)" == "\(cam.deviceData.sessionId)"
                         }
                     }
                     return false
@@ -114,7 +131,7 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
     
     /** 온라인 장비 / 전체 장비 표시 기능 정의 */
     private func deviceCountShow() {
-        let deviceCount = nxCamData.getDeviceInfoList().count
+        let deviceCount = camList.count
         let totalCount = TopAssetsMethods.shared.getAllSitesAssetsList().count
         
         deviceCountLabel.text = String(format: "운용장비: %d대 / 전체: %d대", deviceCount, totalCount)
@@ -122,7 +139,7 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
     
     // 셀 개수
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return nxCamData.getDeviceInfoList().count
+        return camList.count
     }
     
     // 셀에 데이터 넣음
@@ -132,11 +149,11 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         let height = CamListCellHeight.expanded
         cell.updateCellHeight(to: height)
         
-        cell.title.text = camList[indexPath.row].deviceName
-        cell.dateLabel.text = camList[indexPath.row].eventTime
+        cell.title.text = camList[indexPath.row].name
+        cell.dateLabel.text = camList[indexPath.row].deviceData.eventTime
         var sbAiModel = [String]()
         
-        if let sessionId = Int(camList[indexPath.row].sessionId),
+        if let sessionId = Int(camList[indexPath.row].deviceData.sessionId),
            let targetAiModelStringList = assetAiModelHashMap[sessionId]?.aiModelList {
             // AI 모델을 장비 Item에 매칭시켜주는 작업
             for aiModel in targetAiModelStringList {
@@ -157,13 +174,12 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         
         let nxCamData = NxCamMethods.shared
         
-        let selected = nxCamData.getDeviceInfoList()[indexPath.row]
+        let selected = nxCamData.getNewDeviceInfoList()[indexPath.row]
         print("selected =  \(selected)")
-        nxCamData.setSelectedDeviceInfo(selected)
-        
+        nxCamData.setNewSelectedDeviceInfo(selected)
     
         guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else { return }
-        camMonitorVC.titleString = selected.deviceName
+        camMonitorVC.titleString = selected.name
         camMonitorVC.aiModelString = aiModelString
         self.navigationController?.pushViewController(camMonitorVC, animated: true)
     }

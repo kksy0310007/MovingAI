@@ -26,6 +26,10 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     private var allAssetDeviceList: [AssetData] = []
     // 온라인 장비 전체
     private var onlineDeviceList: [NxCamDeviceInfo] = []
+    // 온라인장비 + name
+    private var newOnlineDeviceList: [NewNxCamDeviceInfo] = []
+    
+    
     // 계정의 접근 가능한 모든 현장 리스트
     private var allAttachList: [AttachData] = []
     
@@ -119,8 +123,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     
     private func mapWithWebView() {
         let selectedSite = userAccount.movingAIUserAccount?.attach
-        
-//        print("???????? selectedSite?.lng : \(selectedSite?.lng), selectedSite?.lat : \(selectedSite?.lat)")
+
         if (selectedSite?.lng != nil && selectedSite?.lat != nil) {
             if (selectedSite?.lat != 0.0 || selectedSite?.lng != 0.0 ) {
                 mapSetCenterFromGPS(lon: (selectedSite?.lng)!, lat: (selectedSite?.lat)!)
@@ -135,6 +138,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
            
             Toaster.shared.makeToast("위치정보가 존재하지 않습니다.", .middle)
             mapSetCenterFromGPS(lon: self.longitude, lat: self.latitude)
+            print("위치?? : \(self.longitude), \(self.latitude)")
         }
     }
 
@@ -175,7 +179,6 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                         print("addMarkerLayer - JavaScript execution error: \(error.localizedDescription)")
                     } else {
                         print("addMarkerLayer - JavaScript executed successfully: \(result ?? "No result")")
-//                        Toaster.shared.makeToast("장비가 존재하지 않습니다.", .middle)
                     }
                 }
             }
@@ -396,12 +399,10 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                         for targetContractor in self.allAttachList {
                             // 계정 company 아래에 있는 contractor 조회
                             if let parentId = targetContractor.parentId, parentId == id {
-//                                print("settingData 같은 아이디 있다!!")
                                 for targetSite in self.allAttachList {
                                     // 특정 contractor 아래에 있는 site 조회
                                     if let siteParentId = targetSite.parentId, siteParentId == targetContractor.id {
                                         self.userAccessibleAllSitesList.append(targetSite)
-//                                        print("settingData ===> 3, Company, siteParentId : \(siteParentId) ")
                                         }
                                     }
                                 }
@@ -483,14 +484,20 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     }
     
     func checkOnlineDeviceList() {
+        newOnlineDeviceList.removeAll()
+        
         // 전체 온라인 장비 리스트
         for targetOnlineDevice in onlineDeviceList {
             // 계정이 접근 가능한 현장의 전체 장비 리스트
             for targetSiteAsset in allSiteAssetList {
                 if let sessionId = Int(targetOnlineDevice.sessionId), sessionId == targetSiteAsset.id {
                     // 온라인 장비 api의 "장비 이름" 말고 장비 정보 api의 "장비 이름" 입력
-                    print("checkOnlineDeviceList ==> targetSiteAsset.name : \(String(describing: targetSiteAsset.name)) ")
                     onlineSiteAssetList.append(targetOnlineDevice)
+                    
+                    let newDevice = NewNxCamDeviceInfo(deviceData: targetOnlineDevice,name: targetSiteAsset.name ?? "")
+                    
+                    newOnlineDeviceList.append(newDevice)
+                    
                     // 드롭다운 리스트
                     setDropDown()
                     getAiModelData()
@@ -546,12 +553,14 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     }
     
     func setDropDown() {
-        dropDownDataSource.append(contentsOf: onlineSiteAssetList.compactMap { $0.deviceName })
-        dropDown.optionArray = dropDownDataSource
+        self.nxCamData.newDeviceInfoList.append(contentsOf: newOnlineDeviceList)
+        dropDownDataSource.append(contentsOf: newOnlineDeviceList.compactMap{  $0.name
+            })
+        // 중복 제거
+        let uniqueDropDownData = Array(Set(dropDownDataSource))
+        dropDown.optionArray = uniqueDropDownData
         
-        print("@@#@#@#@#@#@ => setDropDown : \(dropDownDataSource)")
-        
-        if (dropDownDataSource.count == 0) {
+        if (uniqueDropDownData.count == 0) {
             Toaster.shared.makeToast("연결된 장비가 없습니다.", .middle)
         }
         
@@ -563,11 +572,9 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             
             // 해당 데이터의 위치에 맵 포커스 맞춤
             // 선택된 이름과 매칭되는 데이터 검색
-            if let selectedDevice = self.onlineSiteAssetList.first(where: { $0.deviceName == selectedText }) {
-                    let sessioid = selectedDevice.sessionId
-                    
+            if let selectedDevice = self.newOnlineDeviceList.first(where: { $0.name == selectedText }) {
+                let sessioid = selectedDevice.deviceData.sessionId
                     print("Selected Device sessionId: \(sessioid)")
-                
                     self.apiGetAssetsData(id: Int(sessioid)!)
 
                 } else {
@@ -582,8 +589,11 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         let markerDataSplit = markerTitle.split(separator: ",").map { String($0) }
         guard let sessionId = markerDataSplit.first else { return }
         
-        if let selectedDevice = onlineSiteAssetList.first(where: { $0.sessionId == sessionId }) {
-            NxCamMethods.shared.setSelectedDeviceInfo(selectedDevice)
+        if let selectedDevice = newOnlineDeviceList.first(where: { $0.deviceData.sessionId == sessionId}) {
+            
+            let nxCamData = NxCamMethods.shared
+            nxCamData.setNewSelectedDeviceInfo(selectedDevice)
+            
         
             guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else { return }
             
@@ -599,7 +609,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 aiModelString = sbAiModel.joined(separator: ", ")
             }
             
-            camMonitorVC.titleString = selectedDevice.deviceName
+            camMonitorVC.titleString = selectedDevice.name
             camMonitorVC.aiModelString = aiModelString
             self.navigationController?.pushViewController(camMonitorVC, animated: true)
         }
@@ -633,4 +643,8 @@ extension MainViewController: CLLocationManagerDelegate {
         print("locationManager >> didFailWithError ")
     }
  
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        self.addMarkerLayer()
+        self.makeAddMarkerLayer()
+    }
 }

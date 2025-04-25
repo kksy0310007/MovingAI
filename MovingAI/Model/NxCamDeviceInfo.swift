@@ -36,6 +36,7 @@ struct NxCamDeviceInfo: Codable {
         case sessionId, address, port, deviceIp, deviceSerial, deviceStatus, lat, lon, keepaliveTime, modemIMEI, deviceName, batLevel, statusCode, lastPayload, nxcamVER, eventFile, gpuTemp, cpuTemp, eventTime, sdLowSpace, omsVER
     }
     
+   
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.sessionId = try container.decode(String.self, forKey: .sessionId)
@@ -62,4 +63,3 @@ struct NxCamDeviceInfo: Codable {
     }
         
 }
-

@@ -10,7 +10,7 @@ import SnapKit
 
 enum CamListCellHeight: CGFloat {
     case expanded = 97
-    case simple = 65
+    case simple = 78
 }
 
 
@@ -115,6 +115,9 @@ class CamListCell: UITableViewCell {
                 dateLabel.isHidden = false
                 aiModelLabel.isHidden = false
             case .simple:
+                title.snp.makeConstraints { make in
+                    make.centerY.equalToSuperview().offset(-5)
+                }
                 title.isHidden = false
                 dateLabel.isHidden = true
                 aiModelLabel.isHidden = true

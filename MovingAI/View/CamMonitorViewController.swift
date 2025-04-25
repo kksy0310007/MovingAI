@@ -21,7 +21,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     
     var titleString: String? = ""
     let nxCamData = NxCamMethods.shared
-    var selectedDeviceData: NxCamDeviceInfo? = nil
+    var selectedNewDeviceData: NewNxCamDeviceInfo? = nil
     
     // 버튼 보임/가림 처리
     var monitorButtnFlag = true
@@ -80,6 +80,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         let label = UILabel()
         label.text = "AI Model"
         label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 15)
         label.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         return label
     }()
@@ -292,6 +293,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
         let label = UILabel()
         label.text = "AI Model"
         label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 16)
         label.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         return label
     }()
@@ -1071,25 +1073,25 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     // 위
     @objc func NButtonAction(sender: UIButton) {
         print("select NButtonAction")
-        camRotateControl(session: selectedDeviceData!.sessionId, direction: 1)
+        camRotateControl(session: (selectedNewDeviceData?.deviceData.sessionId)!, direction: 1)
     }
     
     // 오른
     @objc func EButtonAction(sender: UIButton) {
         print("select EButtonAction")
-        camRotateControl(session: selectedDeviceData!.sessionId, direction: 3)
+        camRotateControl(session: (selectedNewDeviceData?.deviceData.sessionId)!, direction: 3)
     }
     
     // 아래
     @objc func SButtonAction(sender: UIButton) {
         print("select SButtonAction")
-        camRotateControl(session: selectedDeviceData!.sessionId, direction: 2)
+        camRotateControl(session: (selectedNewDeviceData?.deviceData.sessionId)!, direction: 2)
     }
     
     // 왼
     @objc func WButtonAction(sender: UIButton) {
         print("select WButtonAction")
-        camRotateControl(session: selectedDeviceData!.sessionId, direction: 4)
+        camRotateControl(session: (selectedNewDeviceData?.deviceData.sessionId)!, direction: 4)
     }
     
     @objc func fullScreenBackButtonTapped(sender: UIButton) {
@@ -1163,10 +1165,10 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     
     
     func checkSelectedDeviceData() {
-        if let selectedData = nxCamData.selectedDeviceInfo {
-            print("selected Data sessionID = \(selectedData.sessionId)")
-            selectedDeviceData = selectedData
-            
+        if let selectedData = nxCamData.selectedNewDeviceInfo {
+            print("selected Data sessionID = \(selectedData.deviceData.sessionId)")
+
+            selectedNewDeviceData = selectedData
             connectVideoSocket(channel: camChannel)
         } else {
             Toaster.shared.makeToast("장비가 선택되지 않았습니다.", .middle)
@@ -1177,7 +1179,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     func patrolOn() {
         LoadingIndicator.shared.show()
 
-        if let sessionId = selectedDeviceData?.sessionId {
+        if let sessionId = selectedNewDeviceData?.deviceData.sessionId {
             ApiRequest.shared.setPatrolOn(sessionId: sessionId) { response, error in
                 if response {
                     print("patrolOn ==== > data : \(response)")
@@ -1194,7 +1196,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     func patrolOff() {
         LoadingIndicator.shared.show()
         
-        if let sessionId = selectedDeviceData?.sessionId {
+        if let sessionId = selectedNewDeviceData?.deviceData.sessionId {
             ApiRequest.shared.setPatrolOff(sessionId: sessionId) { response, error in
                 if response {
                     print("patrolOff ==== > data : \(response)")
@@ -1231,7 +1233,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     
     func connectVideoSocket(channel: String) {
         var socketUrl = "wss://platform.moving-ai.com/mjpeg?serial="
-        if let deviceSerial = selectedDeviceData?.deviceSerial {
+        if let deviceSerial = selectedNewDeviceData?.deviceData.deviceSerial {
             socketUrl += deviceSerial
         }
         socketUrl += "&channel="
@@ -1351,7 +1353,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     
     // 장비에 있는 프리셋 폴더 파일 리스트
     private func getPresetVoiceData() {
-        ApiRequest.shared.getPresetVoiceDeviceData(sessionId: selectedDeviceData?.sessionId ?? "") { (result, error) in
+        ApiRequest.shared.getPresetVoiceDeviceData(sessionId: selectedNewDeviceData?.deviceData.sessionId ?? "") { (result, error) in
             if let result = result {
                 print("성공하였습니다 :: \(result)")
                 if !result.isEmpty {
@@ -1468,7 +1470,7 @@ extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, BottomSheet
     
     // 방송 전파이력 생성
     private func broadcastHistoryCreate(apiType: String, eventKind: String) {
-        ApiRequest.shared.setBroadcastHistoryCreate(sessionId:selectedDeviceData?.sessionId ?? "0", apiType: apiType, eventKind: eventKind) { (result, error) in
+        ApiRequest.shared.setBroadcastHistoryCreate(sessionId:selectedNewDeviceData?.deviceData.sessionId ?? "0", apiType: apiType, eventKind: eventKind) { (result, error) in
             if result == true {
                 print("broadcastHistoryCreate ==== > success ")
             } else {
@@ -1514,7 +1516,7 @@ extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, BottomSheet
 
     private func setupWebSocket() {
         var socketUrl = "wss://platform.moving-ai.com/mic/"
-        if let session = selectedDeviceData?.sessionId {
+        if let session = selectedNewDeviceData?.deviceData.sessionId {
             socketUrl += session
         }
         audioStreamingManager.getURL(webSocketURL: socketUrl)

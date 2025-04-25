@@ -73,7 +73,7 @@ extension UIViewController {
             titleLabel.textAlignment = .center
             titleLabel.snp.makeConstraints { make in
                 make.center.equalToSuperview() // 완전히 중앙 정렬
-                make.leading.greaterThanOrEqualToSuperview().offset(20) // 레이아웃 여유 확보
+//                make.leading.greaterThanOrEqualToSuperview().offset(-20) // 레이아웃 여유 확보
                 make.trailing.lessThanOrEqualToSuperview().offset(-20)
             }
         }

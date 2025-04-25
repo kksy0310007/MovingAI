@@ -15,7 +15,7 @@ protocol BottomSheetDelegate: AnyObject {
 class BottomSheetView: UIView {
     
     let nxCamData = NxCamMethods.shared
-    var camList: [NxCamDeviceInfo] = []
+    var camList: [NewNxCamDeviceInfo] = []
     
     // 델리게이트 선언
     weak var delegate: BottomSheetDelegate?
@@ -38,8 +38,21 @@ class BottomSheetView: UIView {
         setupViewHierarchy()
         setupViewAttributes()
         setupLayout()
-        
-        camList = nxCamData.getDeviceInfoList()
+                
+        // 리스트 중복 제거
+        let originalList = nxCamData.getNewDeviceInfoList()
+        var seenSerials = Set<String>()
+        let uniqueList = originalList.filter { deviceInfo in
+            let serial = deviceInfo.deviceData.deviceSerial
+            if seenSerials.contains(serial) {
+                return false
+            } else {
+                seenSerials.insert(serial)
+                return true
+            }
+        }
+
+        camList = uniqueList
         
         tableView.reloadData() // 데이터 소스 갱신
     }
@@ -83,7 +96,7 @@ class BottomSheetView: UIView {
 }
 extension BottomSheetView: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return nxCamData.getDeviceInfoList().count
+        return nxCamData.getNewDeviceInfoList().count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -92,7 +105,7 @@ extension BottomSheetView: UITableViewDataSource, UITableViewDelegate {
         let height = CamListCellHeight.simple
         cell.updateCellHeight(to: height)
         
-        cell.title.text = camList[indexPath.row].deviceName
+        cell.title.text = camList[indexPath.row].name
         cell.selectionStyle = .none
             
         return cell
@@ -102,9 +115,9 @@ extension BottomSheetView: UITableViewDataSource, UITableViewDelegate {
         print("Selected item at row \(indexPath.row)")
         
         let nxCamData = NxCamMethods.shared
-        let selected = nxCamData.getDeviceInfoList()[indexPath.row]
-        nxCamData.setSelectedDeviceInfo(selected)
-        print("selected =  \(selected.deviceName)")
+        let selected = nxCamData.getNewDeviceInfoList()[indexPath.row]
+        nxCamData.setNewSelectedDeviceInfo(selected)
+        print("selected =  \(selected.deviceData.deviceName)")
         
         self.delegate?.bottomSheetDidSelectItem(index: indexPath.row)
     }
