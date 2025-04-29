@@ -1331,7 +1331,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
                         
                         if let targetData = targetData {
                             for deviceId in targetData {
-                                if let deviceSession = Int(NxCamMethods.shared.selectedDeviceInfo?.sessionId ?? ""),
+                                if let deviceSession = Int(NxCamMethods.shared.selectedNewDeviceInfo?.deviceData.sessionId ?? ""),
                                    let presetDeviceSession = Int(deviceId) {
                                     // 켜진 장비 세션값 vs 프리셋이 적용된 장비 세션값
                                     if deviceSession == presetDeviceSession {
@@ -1355,7 +1355,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     private func getPresetVoiceData() {
         ApiRequest.shared.getPresetVoiceDeviceData(sessionId: selectedNewDeviceData?.deviceData.sessionId ?? "") { (result, error) in
             if let result = result {
-                print("성공하였습니다 :: \(result)")
                 if !result.isEmpty {
                     // 장비 파일 리스트와 매칭 완료된 프리셋 리스트 필터링
                     for presetFile in result {
@@ -1365,8 +1364,6 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
                             }
                         }
                     }
-                    print("getPresetVoiceData presetDataList: \(self.presetDataList)")
-                    
                 } else {
                     // 값 업음
                     Toaster.shared.makeToast("안내방송이 존재하지 않습니다.")

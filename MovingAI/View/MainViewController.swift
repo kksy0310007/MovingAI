@@ -396,17 +396,28 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 switch (attachType) {
                     // 회사 계정
                     case "Company":
-                        for targetContractor in self.allAttachList {
-                            // 계정 company 아래에 있는 contractor 조회
-                            if let parentId = targetContractor.parentId, parentId == id {
-                                for targetSite in self.allAttachList {
-                                    // 특정 contractor 아래에 있는 site 조회
-                                    if let siteParentId = targetSite.parentId, siteParentId == targetContractor.id {
-                                        self.userAccessibleAllSitesList.append(targetSite)
+                        // super admin
+                        if id == 16 {
+                            for targetContractor in self.allAttachList {
+                                if (targetContractor.parentId != nil && (targetContractor.useyn != nil)) {
+                                    self.userAccessibleAllSitesList.append(targetContractor)
+                                }
+                            }
+                        }
+                        else {
+                            for targetContractor in self.allAttachList {
+                                // 계정 company 아래에 있는 contractor 조회
+                                if let parentId = targetContractor.parentId, parentId == id {
+                                    for targetSite in self.allAttachList {
+                                        // 특정 contractor 아래에 있는 site 조회
+                                        if let siteParentId = targetSite.parentId, siteParentId == targetContractor.id {
+                                            self.userAccessibleAllSitesList.append(targetSite)
                                         }
                                     }
                                 }
                             }
+                        }
+                        
                     
                         // 현장 전체 장비 리스트
                     for targerAsset in self.allAssetDeviceList {
