@@ -44,7 +44,7 @@
 
     var vmap = new vw.ol3.Map("vmap",  vw.ol3.MapOptions);
     vmap.getView().setCenter(ol.proj.transform([127.190688, 37.549060], 'EPSG:4326', 'EPSG:3857'));
-    vmap.getView().setZoom(16);
+    vmap.getView().setZoom(18);
 
     vmap.on('click', function (evt) {
       var feature = vmap.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
@@ -154,7 +154,7 @@
         contents : markerContents,
         //iconSize: [10, 10],
         iconScale: 0.5,
-        //iconUrl : './image.png',
+        iconUrl : './image.png',
         text : {
           offsetX : 0.5,
           offsetY : 20,

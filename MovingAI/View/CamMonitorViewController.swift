@@ -1346,6 +1346,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
                 self.getPresetVoiceData()
             } else {
                 print("오류 발생: \(error?.localizedDescription ?? "알 수 없는 오류")")
+                LoadingIndicator.shared.hide()
             }
         }
         
@@ -1371,6 +1372,7 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
                 
             } else {
                 print("오류 발생: \(error?.localizedDescription ?? "알 수 없는 오류")")
+                LoadingIndicator.shared.hide()
             }
         }
     }

@@ -12,11 +12,14 @@ import SwiftyToaster
 class EventNotificationViewController: UIViewController {
     
     let searchView = UIView()
-    
     var eventList: [EventResult] = []
     var filterEventList: [EventResult] = []
     
     lazy var requestParams: [String: Any] = createRequestParameters()
+    
+    var currentPage = 1
+    let pageSize = 10
+    var isFetching = false
     
     let textLabel: UILabel = {
         let label = UILabel()
@@ -95,29 +98,47 @@ class EventNotificationViewController: UIViewController {
             make.top.equalTo(searchView.snp.bottom).offset(30)
             make.leading.trailing.bottom.equalToSuperview()
         }
+        
+    }
+    
+    @objc func loadMoreData() {
+        currentPage += 1
+        getEventLogsApi(isLoadMore: true)
     }
     
     // 감지 이벤트 목록 api 호출
-    func getEventLogsApi() {
-   
-        self.eventList.removeAll()
+    func getEventLogsApi(isLoadMore: Bool = false) {
+        if isFetching { return } // 중복 방지
+        isFetching = true
 
+        if !isLoadMore {
+            eventList.removeAll()
+            currentPage = 1
+        }
+
+        requestParams["page"] = currentPage
         ApiRequest.shared.getEventLogs(params: requestParams) { response, error in
+            self.isFetching = false
+
             if let data = response {
                 let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.allSitesAssets
-            
-                    for targetAssetData in allSitesAssetsList {
-                        for targetEventResult in data {
-                            if targetEventResult.assetId == targetAssetData.id {
-                                self.eventList.append(targetEventResult)
-                            }
+                var newEvents: [EventResult] = []
+
+                for asset in allSitesAssetsList {
+                    for event in data {
+                        if event.assetId == asset.id {
+                            newEvents.append(event)
                         }
                     }
-                if self.eventList != nil {
-                    self.tableView.reloadData()
-                } else {
-                    Toaster.shared.makeToast("이벤트가 존재하지 않습니다.", .short)
                 }
+
+                if newEvents.isEmpty && isLoadMore {
+                    // 더 이상 로드할 데이터 없음
+                    print("No more data to load")
+                    return
+                }
+                self.eventList += newEvents
+                self.tableView.reloadData()
             } else {
                 print("getEventLogsApi ==== > error : \(error)")
             }
@@ -257,7 +278,7 @@ extension EventNotificationViewController: UITableViewDataSource, UITableViewDel
         }
         
         self.eventList = self.filterEventList
-        if self.eventList.count == 0{
+        if self.eventList.isEmpty {
             Toaster.shared.makeToast("검색 결과가 없습니다.", .short)
         }
         
@@ -314,4 +335,16 @@ extension EventNotificationViewController: UITableViewDataSource, UITableViewDel
         }
     }
     
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let frameHeight = scrollView.frame.size.height
+
+        if offsetY > contentHeight - frameHeight - 100 { // 맨 아래
+            if !isFetching {
+                currentPage += 1
+                getEventLogsApi(isLoadMore: true)
+            }
+        }
+    }
 }

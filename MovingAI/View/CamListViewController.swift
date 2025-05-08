@@ -60,7 +60,9 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
         // tableview 위치, 크기
         setConstraint()
         
-        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
         camList.removeAll()
         
         // 리스트 중복 제거
@@ -78,10 +80,9 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
 
         camList = uniqueList
         
-        
         deviceCountShow()
-        
         getAiModelData()
+
     }
     
     private func setConstraint() {
@@ -170,12 +171,9 @@ class CamListViewController: UIViewController, UITableViewDataSource, UITableVie
 
     // 각 셀 클릭 시 호출
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("select \(indexPath.row)")
-        
-        let nxCamData = NxCamMethods.shared
-        
-        let selected = nxCamData.getNewDeviceInfoList()[indexPath.row]
-        print("selected =  \(selected)")
+        print("### select \(indexPath.row)")
+
+        let selected = camList[indexPath.row]
         nxCamData.setNewSelectedDeviceInfo(selected)
     
         guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else { return }

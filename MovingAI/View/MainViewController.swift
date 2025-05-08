@@ -65,6 +65,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     }
     
     func refreshWebView() {
+        dropDown.text = "장비 선택"
         webView.reload()
     }
     
@@ -375,7 +376,9 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     
                     self.mapSetCenterFromGPS(lon: longitude, lat: latitude)
                 } else {
-                        print("장비의 위치정보가 없습니다.")
+                    LoadingIndicator.shared.hide()
+                    print("장비의 위치정보가 없습니다.")
+                    Toaster.shared.makeToast("장비의 위치정보가 없습니다.", .short)
                 }
             } else {
                 print("오류 발생: \(error?.localizedDescription ?? "알 수 없는 오류")")
@@ -397,14 +400,14 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     // 회사 계정
                     case "Company":
                         // super admin
-                        if id == 16 {
-                            for targetContractor in self.allAttachList {
-                                if (targetContractor.parentId != nil && (targetContractor.useyn != nil)) {
-                                    self.userAccessibleAllSitesList.append(targetContractor)
-                                }
-                            }
-                        }
-                        else {
+//                        if id == 16 {
+//                            for targetContractor in self.allAttachList {
+//                                if (targetContractor.parentId != nil && (targetContractor.useyn != nil)) {
+//                                    self.userAccessibleAllSitesList.append(targetContractor)
+//                                }
+//                            }
+//                        }
+//                        else {
                             for targetContractor in self.allAttachList {
                                 // 계정 company 아래에 있는 contractor 조회
                                 if let parentId = targetContractor.parentId, parentId == id {
@@ -416,7 +419,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                                     }
                                 }
                             }
-                        }
+//                        }
                         
                     
                         // 현장 전체 장비 리스트
