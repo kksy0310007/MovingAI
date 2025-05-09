@@ -21,7 +21,10 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     var locationManager = CLLocationManager()
     var longitude = CLLocationDegrees()
     var latitude = CLLocationDegrees()
-        
+    
+    var latDeg: Double = 0.0
+    var lonDeg: Double = 0.0
+    
     // 전체 장비
     private var allAssetDeviceList: [AssetData] = []
     // 온라인 장비 전체
@@ -198,15 +201,12 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     for targetAsset in self.allSiteAssetList {
                         if let sessionId = Int(targetDevice.sessionId), sessionId == targetAsset.id {
 
-                            var latDeg: Double
-                            var lonDeg: Double
-                            
                             if let lat = targetAsset.lat, let lon = targetAsset.lon, lat != 0.0, lon != 0.0 {
-                                latDeg = lat
-                                lonDeg = lon
+                                self.latDeg = lat
+                                self.lonDeg = lon
                             } else if let attachLat = targetAsset.attach?.lat, let attachLon = targetAsset.attach?.lng, attachLat != 0.0, attachLon != 0.0 {
-                                latDeg = attachLat
-                                lonDeg = attachLon
+                                self.latDeg = attachLat
+                                self.lonDeg = attachLon
                             } else {
                                 continue // lat/lon 정보가 없거나 0.0인 경우 스킵
                             }
@@ -215,8 +215,8 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                                 targetAsset.serial,
                                 "\(targetAsset.id)",
                                 targetAsset.name ?? ".",
-                                "\(lonDeg)",
-                                "\(latDeg)"
+                                "\(self.lonDeg)",
+                                "\(self.latDeg)"
                             ].joined(separator: "@")
                             
                             let jsCode = "addMarker('\(sb)');"
@@ -376,9 +376,13 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                     
                     self.mapSetCenterFromGPS(lon: longitude, lat: latitude)
                 } else {
-                    LoadingIndicator.shared.hide()
-                    print("장비의 위치정보가 없습니다.")
-                    Toaster.shared.makeToast("장비의 위치정보가 없습니다.", .short)
+                    if (self.latDeg != 0.0  || self.lonDeg != 0.0) {
+                        self.mapSetCenterFromGPS(lon: self.lonDeg, lat: self.latDeg)
+                    } else {
+                        LoadingIndicator.shared.hide()
+                        print("장비의 위치정보가 없습니다.")
+                        Toaster.shared.makeToast("장비의 위치정보가 없습니다.", .short)
+                    }
                 }
             } else {
                 print("오류 발생: \(error?.localizedDescription ?? "알 수 없는 오류")")
@@ -579,8 +583,8 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         }
         
         dropDown.didSelect { selectedText, index, id in
-            print("Selected : \(index)")
-            
+            print("Selected : \(selectedText)")
+            print("newOnlineDeviceList : \(self.newOnlineDeviceList)")
             // 로딩 시작
             LoadingIndicator.shared.show()
             
