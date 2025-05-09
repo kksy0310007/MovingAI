@@ -372,13 +372,17 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 // 첫 번째 AttachData만 사용
                 if let firstData = result.first,
                     let latitude = firstData.lat,
-                    let longitude = firstData.lng {
+                   let longitude = firstData.lon {
                     
                     self.mapSetCenterFromGPS(lon: longitude, lat: latitude)
                 } else {
-                    if (self.latDeg != 0.0  || self.lonDeg != 0.0) {
-                        self.mapSetCenterFromGPS(lon: self.lonDeg, lat: self.latDeg)
-                    } else {
+                    
+                    if let firstData = result.first,
+                       let lat = firstData.attach?.lat,
+                       let lng = firstData.attach?.lng {
+                        
+                        self.mapSetCenterFromGPS(lon: lng, lat: lat)
+                    }else {
                         LoadingIndicator.shared.hide()
                         print("장비의 위치정보가 없습니다.")
                         Toaster.shared.makeToast("장비의 위치정보가 없습니다.", .short)
@@ -648,6 +652,7 @@ extension MainViewController: CLLocationManagerDelegate {
             mapWithWebView()
         }
         locationManager.stopUpdatingLocation()
+        
     }
     
     

@@ -110,13 +110,13 @@ class ApiRequest {
             }
     }
     
-    func getOneAssetsData(id: Int,completion: @escaping ([AttachData]?, Error?) -> Void){
+    func getOneAssetsData(id: Int,completion: @escaping ([AssetData]?, Error?) -> Void){
         AF.request(
             ApiUrl.oneAssetsData + "\(id)",
             method: .get,
             headers: commonHeaders
         ).validate(statusCode: 200..<300) // 상태 코드 유효성 검증
-            .responseDecodable(of: [AttachData].self) { response in
+            .responseDecodable(of: [AssetData].self) { response in
                 switch response.result {
                 
                 case .success(let value):

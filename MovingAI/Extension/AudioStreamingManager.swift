@@ -18,7 +18,8 @@ class AudioStreamingManager: NSObject {
     
     // 오디오 설정
     private let bufferSize: AVAudioFrameCount = 2048
-    private let sampleRate: Double = 48000.0//44100.0 // 서버와 일치해야 함
+    
+    //private let sampleRate: Double = 44100.0//48000.0// // 서버와 일치해야 함
     private let audioFormat: AVAudioFormat
     
     override init() {
@@ -27,8 +28,10 @@ class AudioStreamingManager: NSObject {
         let audioSession = AVAudioSession.sharedInstance()
         try? audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .defaultToSpeaker])
         try? audioSession.setActive(true)
-        self.audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32,//.pcmFormatInt16,
-                                                  sampleRate: sampleRate,//audioSession.sampleRate,
+        
+       
+        self.audioFormat = AVAudioFormat(commonFormat: .pcmFormatInt16,//.pcmFormatFloat32,//,
+                                         sampleRate: audioSession.sampleRate,
                                                   channels: 1,
                                                   interleaved: true)!
         super.init()

@@ -96,7 +96,7 @@ class BottomSheetView: UIView {
 }
 extension BottomSheetView: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return nxCamData.getNewDeviceInfoList().count
+        return camList.count//nxCamData.getNewDeviceInfoList().count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
