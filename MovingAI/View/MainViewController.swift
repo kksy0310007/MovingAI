@@ -308,7 +308,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
         // HTML 파일 로드
         loadWebView()
         
-        mapWithWebView()
+//        mapWithWebView()
     }
 
     
@@ -370,22 +370,17 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             if let result = result {
                 print("성공하였습니다 :: \(result)")
                 // 첫 번째 AttachData만 사용
-                if let firstData = result.first,
-                    let latitude = firstData.lat,
-                   let longitude = firstData.lon {
-                    
-                    self.mapSetCenterFromGPS(lon: longitude, lat: latitude)
-                } else {
-                    
-                    if let firstData = result.first,
-                       let lat = firstData.attach?.lat,
-                       let lng = firstData.attach?.lng {
-                        
-                        self.mapSetCenterFromGPS(lon: lng, lat: lat)
-                    }else {
-                        LoadingIndicator.shared.hide()
-                        print("장비의 위치정보가 없습니다.")
-                        Toaster.shared.makeToast("장비의 위치정보가 없습니다.", .short)
+                if let firstData = result.first {
+                    if firstData.lat != 0 || firstData.lon != 0 {
+                        self.mapSetCenterFromGPS(lon: firstData.lon!, lat: firstData.lat!)
+                    } else {
+                        if firstData.attach?.lat != 0 || firstData.attach?.lng != 0 {
+                            self.mapSetCenterFromGPS(lon: (firstData.attach?.lng)!, lat: (firstData.attach?.lat)!)
+                        } else {
+                            LoadingIndicator.shared.hide()
+                            print("장비의 위치정보가 없습니다.")
+                            Toaster.shared.makeToast("장비의 위치정보가 없습니다.", .short)
+                        }
                     }
                 }
             } else {
@@ -608,6 +603,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     }
     
     private func handleMarkerSelection(_ markerTitle: String) {
+        LoadingIndicator.shared.show()
         let markerDataSplit = markerTitle.split(separator: ",").map { String($0) }
         guard let sessionId = markerDataSplit.first else { return }
         
@@ -633,6 +629,7 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             
             camMonitorVC.titleString = selectedDevice.name
             camMonitorVC.aiModelString = aiModelString
+            LoadingIndicator.shared.hide()
             self.navigationController?.pushViewController(camMonitorVC, animated: true)
         }
     }
