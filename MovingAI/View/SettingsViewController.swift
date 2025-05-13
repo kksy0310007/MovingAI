@@ -96,6 +96,11 @@ class SettingsViewController: UIViewController, UITableViewDataSource, UITableVi
 //                    UserDefaults.standard.removeObject(forKey: "isPushSetting")
 //                    UserDefaults.standard.removeObject(forKey: "siteAssets")
                     
+                    // 데이터 저장하는 인스턴스 모두 삭제
+                    NxCamMethods.shared.removeAll()
+                    TopAssetsMethods.shared.removeAll()
+                    UserAccountMethods.shared.removeAll()
+                    
                     // 로그인 화면으로 돌아가기
                     if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
                           let window = sceneDelegate.window {

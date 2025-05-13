@@ -371,10 +371,10 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
                 print("성공하였습니다 :: \(result)")
                 // 첫 번째 AttachData만 사용
                 if let firstData = result.first {
-                    if firstData.lat != 0 || firstData.lon != 0 {
+                    if firstData.lat != 0.0 && firstData.lon != 0.0 {
                         self.mapSetCenterFromGPS(lon: firstData.lon!, lat: firstData.lat!)
                     } else {
-                        if firstData.attach?.lat != 0 || firstData.attach?.lng != 0 {
+                        if firstData.attach?.lat != 0.0 && firstData.attach?.lng != 0.0 {
                             self.mapSetCenterFromGPS(lon: (firstData.attach?.lng)!, lat: (firstData.attach?.lat)!)
                         } else {
                             LoadingIndicator.shared.hide()

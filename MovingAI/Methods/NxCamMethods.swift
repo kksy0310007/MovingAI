@@ -72,4 +72,22 @@ class NxCamMethods {
         
     }
     
+    func removeAll() {
+        onlineDeviceList.removeAll()
+        allAssetDeviceList.removeAll()
+        allAttachList.removeAll()
+        
+        selectedSiteID = 0
+        selectedSiteData = nil
+        
+        deviceInfoList.removeAll()
+        newDeviceInfoList.removeAll()
+        
+        selectedDeviceInfo = nil
+        selectedNewDeviceInfo = nil
+        
+    }
+    
+    
+    
 }

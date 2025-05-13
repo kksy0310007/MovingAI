@@ -24,11 +24,11 @@ class AudioStreamingManager: NSObject {
     
     override init() {
         // 오디오 입력 노드 및 포맷 설정
-        self.inputNode = audioEngine.inputNode
         let audioSession = AVAudioSession.sharedInstance()
-        try? audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .defaultToSpeaker])
         try? audioSession.setActive(true)
+        try? audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .defaultToSpeaker])
         
+        self.inputNode = audioEngine.inputNode
        
         self.audioFormat = AVAudioFormat(commonFormat: .pcmFormatInt16,//.pcmFormatFloat32,//,
                                          sampleRate: audioSession.sampleRate,
@@ -68,6 +68,7 @@ class AudioStreamingManager: NSObject {
         }
         
         do {
+            audioEngine.prepare()
             try audioEngine.start()
         } catch {
             print("Audio Engine failed to start: \(error.localizedDescription)")

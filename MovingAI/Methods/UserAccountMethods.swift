@@ -42,4 +42,14 @@ class UserAccountMethods {
         
     }
     
+    func removeAll() {
+        id = nil
+        name = nil
+        isAutoLogin = false
+        movingAIUserAccount = nil
+        attachId = 0
+        attachType = ""
+        title = ""
+        selectedSiteData = nil
+    }
 }

@@ -32,4 +32,10 @@ class TopAssetsMethods {
         
     }
     
+    func removeAll() {
+        allSitesAssets.removeAll()
+        selectedAsset = nil
+        onlineAssetsList.removeAll()
+    }
+    
 }
