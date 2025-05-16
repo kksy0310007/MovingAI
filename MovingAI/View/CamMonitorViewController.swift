@@ -1354,16 +1354,18 @@ class CamMonitorViewController: UIViewController, URLSessionDelegate {
     
     // 장비에 있는 프리셋 폴더 파일 리스트
     private func getPresetVoiceData() {
+        
+        selectedNewDeviceData?.deviceData.sessionId
         ApiRequest.shared.getPresetVoiceDeviceData(sessionId: selectedNewDeviceData?.deviceData.sessionId ?? "") { (result, error) in
             if let result = result {
                 if !result.isEmpty {
                     // 장비 파일 리스트와 매칭 완료된 프리셋 리스트 필터링
                     for presetFile in result {
-                        for presetModel in self.devicePresetList {
-                            if presetFile.fileName == presetModel.oriFilename {
+                        //for presetModel in self.devicePresetList {
+                            //if presetFile.fileName == presetModel.oriFilename {
                                 self.presetDataList.append(presetFile)
-                            }
-                        }
+                            //}
+                        //}
                     }
                 } else {
                     // 값 업음
