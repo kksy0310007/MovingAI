@@ -1459,7 +1459,7 @@ extension CamMonitorViewController: PopupDelegate, MicPopupDelegate, BottomSheet
         if let fileName = presetDataList[position].fileName {
             let fileNameParts = fileName.split(separator: ".")
             if let firstPart = fileNameParts.first {
-                let targetURL = "\(NxCamMethods.shared.selectedDeviceInfo?.sessionId ?? "")/\(firstPart)"
+                let targetURL = "\(selectedNewDeviceData?.deviceData.sessionId ?? "")/\(firstPart)"
                 ApiRequest.shared.getPlayPresetVoice(targetURL: targetURL) { (result, error) in
                     if result {
                         self.broadcastHistoryCreate(apiType: "VOICEMSG", eventKind: "")
