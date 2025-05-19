@@ -120,10 +120,8 @@ class EventNotificationViewController: UIViewController {
         }
 
         requestParams["page"] = currentPage
-        print("getEventLogsApi ==== > requestParams : \(requestParams)")
         ApiRequest.shared.getEventLogs(params: requestParams) { response, error in
             self.isFetching = false
-            print("getEventLogsApi ==== >  statusCode=\(response), error : \(error)")
             if let data = response {
                 let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.allSitesAssets
                 var newEvents: [EventResult] = []

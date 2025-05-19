@@ -316,7 +316,7 @@ class ApiRequest {
             .responseDecodable(of: [EventResult].self) { response in
                 switch response.result {
                     case .success(let data):
-                        print("@ getEventLogs @ - 성공하였습니다 :: \(data)")
+//                        print("@ getEventLogs @ - 성공하였습니다 :: \(data)")
                         completion(data, nil)
 
                         
