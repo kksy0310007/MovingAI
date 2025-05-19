@@ -49,9 +49,12 @@ class EventNotificationViewController: UIViewController {
         super.viewDidLoad()
         
         addNavigationBar(titleString: "이벤트 조회",isBackButtonVisible: false)
+        initView()
+        
+        
         requestParams = createRequestParameters()
         getEventLogsApi()
-        initView()
+        
     }
 
     private func initView() {
@@ -117,9 +120,10 @@ class EventNotificationViewController: UIViewController {
         }
 
         requestParams["page"] = currentPage
+        print("getEventLogsApi ==== > requestParams : \(requestParams)")
         ApiRequest.shared.getEventLogs(params: requestParams) { response, error in
             self.isFetching = false
-
+            print("getEventLogsApi ==== >  statusCode=\(response), error : \(error)")
             if let data = response {
                 let allSitesAssetsList: [AssetData] = TopAssetsMethods.shared.allSitesAssets
                 var newEvents: [EventResult] = []
@@ -135,13 +139,16 @@ class EventNotificationViewController: UIViewController {
                 if newEvents.isEmpty && isLoadMore {
                     // 더 이상 로드할 데이터 없음
                     print("No more data to load")
+                    Toaster.shared.makeToast("검색 결과가 없습니다.", .short)
                     return
                 }
                 self.eventList += newEvents
-                self.tableView.reloadData()
+                
             } else {
-                print("getEventLogsApi ==== > error : \(error)")
+                print("getEventLogsApi ==== >  statusCode=\(response), error : \(error)")
             }
+            
+            self.tableView.reloadData()
         }
     }
     

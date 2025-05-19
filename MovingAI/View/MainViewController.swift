@@ -58,7 +58,10 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     let dropDown = DropDown()
     // DropDown 데이터를 담을 배열
     var dropDownDataSource: [String] = []
-        
+    
+    // 마커 중복 클릭 방지
+    private var isProcessingMarkerSelection = false
+    
     @available(iOS 8.0, *)
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if (message.name == "MarkerInterface") {
@@ -603,9 +606,16 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
     }
     
     private func handleMarkerSelection(_ markerTitle: String) {
+        
+        guard !isProcessingMarkerSelection else { return }
+            isProcessingMarkerSelection = true
+        
         LoadingIndicator.shared.show()
         let markerDataSplit = markerTitle.split(separator: ",").map { String($0) }
-        guard let sessionId = markerDataSplit.first else { return }
+        guard let sessionId = markerDataSplit.first else {
+            isProcessingMarkerSelection = false
+            return
+        }
         
         if let selectedDevice = newOnlineDeviceList.first(where: { $0.deviceData.sessionId == sessionId}) {
             
@@ -613,7 +623,10 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             nxCamData.setNewSelectedDeviceInfo(selectedDevice)
             
         
-            guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else { return }
+            guard let camMonitorVC = self.storyboard?.instantiateViewController(withIdentifier: "CamMonitorViewController") as? CamMonitorViewController else {
+                isProcessingMarkerSelection = false
+                return
+            }
             
             var sbAiModel = [String]()
         
@@ -629,8 +642,12 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, 
             
             camMonitorVC.titleString = selectedDevice.name
             camMonitorVC.aiModelString = aiModelString
+            
             LoadingIndicator.shared.hide()
+            isProcessingMarkerSelection = false
             self.navigationController?.pushViewController(camMonitorVC, animated: true)
+        } else {
+            isProcessingMarkerSelection = false
         }
     }
 }
