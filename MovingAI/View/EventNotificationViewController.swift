@@ -167,7 +167,7 @@ class EventNotificationViewController: UIViewController {
         
         return [
                "page": page ?? 1,
-               "size": 10,
+               "size": 30,
                "sort": ["regDate,desc"],
                "id": -1,
                "searchDate": date //?? getCurrentDate() // 기본값: 오늘 날짜
